@@ -1,5 +1,16 @@
 # gobatis
 
+## TODO
+0 todo: 单元测试编写  
+1 todo: 批量插入修改<for>标签实现  
+2 todo: 动态sql生成<if>标签实现  
+3 todo: ${xxx}解析实现  
+4 todo: 结果集映射<resultMap>标签实现  
+5 todo: 公共查询字段<sql>标签实现  
+6 todo: 一级缓存实现  
+7 todo: 二级缓存实现  
+8 todo: 完善文档  
+
 #### mapper配置文件
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
