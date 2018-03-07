@@ -5,7 +5,7 @@ import (
 	"database/sql"
 	"reflect"
 	"errors"
-	"gobatis/tools/datautil"
+	"../../tools/datautil"
 )
 
 func StructsProcess(rows *sql.Rows, result interface{}, sqlParams []interface{})(int, error) {

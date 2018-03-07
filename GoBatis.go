@@ -11,10 +11,10 @@ import (
 	"database/sql"
 	"encoding/xml"
 
-	"gobatis/constants"
-	"gobatis/process/resultprocess"
-	"gobatis/tools/datautil"
-	"gobatis/tools/regutil"
+	"./constants"
+	"./process/resultprocess"
+	"./tools/datautil"
+	"./tools/regutil"
 
 	_ "github.com/go-sql-driver/mysql"
 )
