@@ -15,8 +15,6 @@ import (
 	"github.com/wenj91/gobatis/process/resultprocess"
 	"github.com/wenj91/gobatis/tools/datautil"
 	"github.com/wenj91/gobatis/tools/regutil"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
 //next todo:
