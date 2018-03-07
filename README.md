@@ -35,11 +35,11 @@ type User struct {
 }
 
 func main(){
-	mapperPath := []string{"./mapper.xml"}
-   	gobatis := gobatis.NewGoBatis("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", mapperPath)
-   	
-   	param := User{
-    		Id: structs.NullInt64{3, true},
+    mapperPath := []string{"./mapper.xml"}
+    gobatis := gobatis.NewGoBatis("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", mapperPath)
+    
+    param := User{
+        Id: structs.NullInt64{3, true},
     }
     structRes2 := User{}
     i, err = gobatis.Select("Mapper#findStructByStruct", param)(&structRes2)
