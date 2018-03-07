@@ -22,9 +22,13 @@
 
 #### 使用方法
 ```go
+package main
+
 import (
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wenj91/gobatis"
+	"github.com/wenj91/gobatis/structs"
 )
 
 type User struct {
@@ -38,6 +42,12 @@ func main(){
     mapperPath := []string{"./mapper.xml"}
     gobatis := gobatis.NewGoBatis("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", mapperPath)
     
+    //传入id查询Map
+    mapRes := make(map[string]interface{})
+    i, err := gobatis.Select("Mapper#findMapById", 1)(mapRes)
+    fmt.Println("Mapper#findMapById-->", i, mapRes, err)
+    	
+    //根据传入实体查询对象
     param := User{
         Id: structs.NullInt64{3, true},
     }
