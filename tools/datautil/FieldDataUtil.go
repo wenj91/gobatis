@@ -2,7 +2,7 @@ package datautil
 
 import (
 	"reflect"
-	"../../structs"
+	"github.com/wenj91/gobatis/structs"
 	"time"
 	"log"
 )
