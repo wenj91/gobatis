@@ -22,9 +22,13 @@
 
 #### 使用方法
 ```go
+package main
+
 import (
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wenj91/gobatis"
+	"github.com/wenj91/gobatis/structs"
 )
 
 type User struct {
