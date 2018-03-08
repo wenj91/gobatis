@@ -9,7 +9,7 @@
 5 todo: 公共查询字段<sql>标签实现  
 6 todo: 一级缓存实现  
 7 todo: 二级缓存实现   
-8 todo: 加入连接池 
+8 todo: 加入连接池   
 9 todo: 完善文档  
 
 #### mapper配置文件
