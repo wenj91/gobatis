@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mapper namespace="Mapper">
+    <select id="findMapById" resultType="Map">
+        SELECT id, name FROM user where id=#{id} order by id
+    </select>
+    <select id="findStructByStruct" resultType="Struct">
+        SELECT id Id, name Name, create_time CrtTm FROM user where id=#{Id} order by id
+    </select>
+    <insert id="insertStruct">
+        insert into user (name, email, create_time)
+        values (#{Name}, #{Email}, #{CrtTm})
+    </insert>
+    <delete id="deleteById">
+        delete from user where id=#{id}
+    </delete>
+</mapper>

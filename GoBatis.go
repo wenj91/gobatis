@@ -379,11 +379,13 @@ func sqlProcess(sqlMapper sqlMapper, params ...interface{}) (sqlStr string, sqlP
 		paramVal := reflect.ValueOf(param)
 		kind := paramVal.Kind()
 		switch {
+		//arr param process
 		case kind == reflect.Array || kind == reflect.Slice:
 			for i := 0; i < paramVal.Len() && i < len(paramNames); i++ {
 				itemVal := paramVal.Index(i)
 				sqlParams = append(sqlParams, itemVal.Interface())
 			}
+		//map param process
 		case kind == reflect.Map:
 			paramMap := param.(map[string]interface{})
 			for i := 0; i < len(paramNames); i++ {
@@ -394,6 +396,7 @@ func sqlProcess(sqlMapper sqlMapper, params ...interface{}) (sqlStr string, sqlP
 				}
 				sqlParams = append(sqlParams, item)
 			}
+		//struct param process
 		case kind == reflect.Struct:
 			paramVal := reflect.ValueOf(param)
 			if paramVal.Kind() == reflect.Ptr {
@@ -408,7 +411,7 @@ func sqlProcess(sqlMapper sqlMapper, params ...interface{}) (sqlStr string, sqlP
 				}
 				sqlParams = append(sqlParams, item)
 			}
-
+		//base type param process
 		case kind == reflect.Bool ||
 			kind == reflect.Int ||
 			kind == reflect.Int8 ||
