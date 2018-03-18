@@ -72,7 +72,7 @@ func IsZeroOfUnderlyingType(x interface{}) bool {
 func FieldToParams(param interface{}, fieldName string) interface{} {
 	paramVal := reflect.ValueOf(&param)
 	if paramVal.Kind() != reflect.Ptr {
-		log.Fatal("params parse exception")
+		log.Println("params parse exception")
 		return nil
 	}
 
@@ -80,7 +80,7 @@ func FieldToParams(param interface{}, fieldName string) interface{} {
 	fieldVal := ptr.FieldByName(fieldName)
 
 	if IsZeroOfUnderlyingType(fieldVal) {
-		log.Fatal("no this field")
+		log.Println("no this field")
 		return nil
 	}
 
