@@ -47,7 +47,9 @@ func SharpParamMatchReplaceByVal(sqlTemplate string, paramName string, val strin
 		return "", NO_PARAM_MATCH_ERR
 	}
 
-	res := reg.ReplaceAll([]byte(sqlTemplate), []byte(val))
+	repStr := val
+	res := reg.ReplaceAllString(sqlTemplate, repStr)
+	//res := reg.ReplaceAll([]byte(sqlTemplate), []byte(val))
 
 	return string(res), nil
 }

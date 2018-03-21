@@ -5,7 +5,23 @@ import (
 	"github.com/wenj91/gobatis/structs"
 	"time"
 	"log"
+	"errors"
 )
+
+func StructToMap(s interface{}) (map[string]interface{}, error) {
+	objVal := reflect.ValueOf(s)
+	if objVal.Kind() == reflect.Ptr {
+		return nil, errors.New("struct param must not be ptr")
+	}
+
+	res := make(map[string]interface{})
+	objType := objVal.Type()
+	for i:=0; i<objVal.NumField(); i++{
+		res[objType.Field(i).Name]=objVal.Field(i).Interface()
+	}
+
+	return res, nil
+}
 
 func DataToFieldVal(data interface{}, tp reflect.Type) interface{} {
 
@@ -135,4 +151,22 @@ func FieldToParams(param interface{}, fieldName string) interface{} {
 	}
 
 	return nil
+}
+
+func GetFieldValByName(param interface{}, fieldName string)  interface{} {
+	paramVal := reflect.ValueOf(&param)
+	if paramVal.Kind() != reflect.Ptr {
+		log.Println("params parse exception")
+		return nil
+	}
+
+	ptr := reflect.Indirect(paramVal).Elem()
+	fieldVal := ptr.FieldByName(fieldName)
+
+	if IsZeroOfUnderlyingType(fieldVal) {
+		log.Println("no this field")
+		return nil
+	}
+
+	return fieldVal.Interface()
 }

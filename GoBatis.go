@@ -1,20 +1,15 @@
 package gobatis
 
 import (
+	"github.com/wenj91/gobatis/mapperstmt"
+	"github.com/wenj91/gobatis/sqlsource"
 	"context"
-	"errors"
-	"log"
-	"os"
-	"reflect"
-	"strings"
-
 	"database/sql"
-	"encoding/xml"
-
+	"errors"
 	"github.com/wenj91/gobatis/constants"
 	"github.com/wenj91/gobatis/process/resultprocess"
-	"github.com/wenj91/gobatis/tools/datautil"
-	"github.com/wenj91/gobatis/tools/regutil"
+	"log"
+	"os"
 )
 
 //next todo:
@@ -28,31 +23,8 @@ import (
 //7 todo: 二级缓存实现
 //8 todo: 完善文档
 
-// select insert update delete tag
-type stmt struct {
-	Id         string `xml:"id,attr"`
-	ResultType string `xml:"resultType,attr"`
-	SQL        string `xml:",chardata"`
-}
-
-// mapper tag
-type mapper struct {
-	Namespace   string `xml:"namespace,attr"`
-	SelectStmts []stmt `xml:"select"`
-	InsertStmts []stmt `xml:"insert"`
-	UpdateStmts []stmt `xml:"update"`
-	DeleteStmts []stmt `xml:"delete"`
-}
-
-// sql mapper
-type sqlMapper struct {
-	Id         string
-	SQL        string
-	ResultType string
-}
-
 type goBatis struct {
-	sqlMappers map[string]sqlMapper
+	sqlMappers map[string]mapperstmt.SqlNode
 	db         *sql.DB
 	isBegin    bool
 	tx         *sql.Tx
@@ -73,7 +45,7 @@ func NewGoBatis(driverName string, url string, mappers []string) goBatis {
 	}
 
 	gobatis := goBatis{
-		sqlMappers: make(map[string]sqlMapper),
+		sqlMappers: make(map[string]mapperstmt.SqlNode),
 		db:         db,
 	}
 
@@ -145,7 +117,8 @@ func (gobatis *goBatis) prepare(sqlStr string) (*sql.Stmt, error) {
 //		int: 返回数据条数
 //		error: 错误信息
 func (gobatis *goBatis) Select(id string, params ...interface{}) func(results ...interface{}) (int, error) {
-	sqlStr, sqlParams, resultType, err := sqlProcess(gobatis.sqlMappers[id], params...)
+	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
+	boundSql, err := ss.GetBoundSql(params...)
 	if nil != err {
 		log.Println(err)
 		return func(results ...interface{}) (int, error) {
@@ -161,33 +134,33 @@ func (gobatis *goBatis) Select(id string, params ...interface{}) func(results ..
 	}
 
 	callback := func(results ...interface{}) (int, error) {
-		stmt, err := gobatis.prepare(sqlStr)
+		stmt, err := gobatis.prepare(boundSql.Sql)
 		if err != nil {
 			log.Println(err)
 			return 0, err
 		}
 		defer stmt.Close()
 
-		rows, err := stmt.Query(sqlParams...)
+		rows, err := stmt.Query(boundSql.ParameterMappings...)
 		if nil != err {
 			log.Println(err)
 			return 0, err
 		}
 
 		if len(results) == 1 {
-			switch resultType {
+			switch boundSql.ResultType {
 			case constants.RESULT_TYPE_MAP:
-				return resultprocess.MapProcess(rows, results[0], sqlParams)
+				return resultprocess.MapProcess(rows, results[0], boundSql.ParameterMappings)
 			case constants.RESULT_TYPE_MAPS:
-				return resultprocess.MapsProcess(rows, results[0], sqlParams)
+				return resultprocess.MapsProcess(rows, results[0], boundSql.ParameterMappings)
 			case constants.RESULT_TYPE_SLICE:
-				return resultprocess.SliceProcess(rows, results[0], sqlParams)
+				return resultprocess.SliceProcess(rows, results[0], boundSql.ParameterMappings)
 			case constants.RESULT_TYPE_SLICES:
-				return resultprocess.SlicesProcess(rows, results[0], sqlParams)
+				return resultprocess.SlicesProcess(rows, results[0], boundSql.ParameterMappings)
 			case constants.RESULT_TYPE_STRUCT:
-				return resultprocess.StructProcess(rows, results[0], sqlParams)
+				return resultprocess.StructProcess(rows, results[0], boundSql.ParameterMappings)
 			case constants.RESULT_TYPE_STRUCTS:
-				return resultprocess.StructsProcess(rows, results[0], sqlParams)
+				return resultprocess.StructsProcess(rows, results[0], boundSql.ParameterMappings)
 			default:
 				return 0, errors.New("no this result type define")
 			}
@@ -210,7 +183,8 @@ func (gobatis *goBatis) Select(id string, params ...interface{}) func(results ..
 //		int: affectedCount, 返回插入数据条数
 //		error: 错误信息
 func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, error) {
-	sqlStr, sqlParams, _, err := sqlProcess(gobatis.sqlMappers[id], params...)
+	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
+	boundSql, err := ss.GetBoundSql(params)
 	if nil != err {
 		log.Println(err)
 		return 0, 0, err
@@ -221,14 +195,14 @@ func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, erro
 		return 0, 0, err
 	}
 
-	stmt, err := gobatis.prepare(sqlStr)
+	stmt, err := gobatis.prepare(boundSql.Sql)
 	if err != nil {
 		log.Println(err)
 		return 0, 0, err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(sqlParams...)
+	result, err := stmt.Exec(boundSql.ParameterMappings...)
 	if nil != err {
 		log.Println(err)
 		return 0, 0, err
@@ -264,7 +238,8 @@ func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, erro
 //		error: 错误信息
 func (gobatis *goBatis) Delete(id string, params ...interface{}) (int, error) {
 
-	sqlStr, sqlParams, _, err := sqlProcess(gobatis.sqlMappers[id], params...)
+	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
+	boundSql, err := ss.GetBoundSql(params)
 	if nil != err {
 		log.Println(err)
 		return 0, err
@@ -275,14 +250,14 @@ func (gobatis *goBatis) Delete(id string, params ...interface{}) (int, error) {
 		return 0, err
 	}
 
-	stmt, err := gobatis.prepare(sqlStr)
+	stmt, err := gobatis.prepare(boundSql.Sql)
 	if err != nil {
 		log.Println(err)
 		return 0, err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(sqlParams...)
+	result, err := stmt.Exec(boundSql.ParameterMappings...)
 	if nil != err {
 		return 0, err
 	}
@@ -296,7 +271,8 @@ func (gobatis *goBatis) Delete(id string, params ...interface{}) (int, error) {
 }
 
 func (gobatis *goBatis) Update(id string, params ...interface{}) (int, error) {
-	sqlStr, sqlParams, _, err := sqlProcess(gobatis.sqlMappers[id], params...)
+	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
+	boundSql, err := ss.GetBoundSql(params)
 	if nil != err {
 		log.Println(err)
 		return 0, err
@@ -307,14 +283,14 @@ func (gobatis *goBatis) Update(id string, params ...interface{}) (int, error) {
 		return 0, err
 	}
 
-	stmt, err := gobatis.prepare(sqlStr)
+	stmt, err := gobatis.prepare(boundSql.Sql)
 	if err != nil {
 		log.Println(err)
 		return 0, err
 	}
 	defer stmt.Close()
 
-	result, err := stmt.Exec(sqlParams...)
+	result, err := stmt.Exec(boundSql.ParameterMappings...)
 	if nil != err {
 		return 0, err
 	}
@@ -333,112 +309,6 @@ func (gobatis *goBatis) Update(id string, params ...interface{}) (int, error) {
 //	return 0, nil
 //}
 
-// sql参数提取并生成prepare sql语句和参数列表
-// @result
-//		string: sqlStr生成prepare sql语句
-//		interface{}: sqlParams生成prepare参数列表
-//		string: resultType返回类型 目前支持：Map, Maps, Struct, Structs, Slice, Slices这几种形式返回
-func sqlProcess(sqlMapper sqlMapper, params ...interface{}) (sqlStr string, sqlParams []interface{}, resultType string, err error) {
-
-	if sqlMapper.Id == "" {
-		err = errors.New("no this id in mapper file")
-		return
-	}
-
-	//如果sqlTemplate中存在参数, 则提取参数
-	paramNames := []string{}
-	if strings.Contains(sqlMapper.SQL, "#{") {
-		paramNames = regutil.SharpParamNamesFind(sqlMapper.SQL)
-	}
-
-	//简化sql语句
-	sqlStr = strings.Replace(sqlMapper.SQL, "\r", " ", -1)
-	sqlStr = strings.Replace(sqlStr, "\n", " ", -1)
-	sqlStr = strings.Replace(sqlStr, "\t", " ", -1)
-	sqlStr = strings.Trim(sqlStr, " ")
-
-	//转化sql语句
-	for i := 0; i < len(paramNames); i++ {
-		sqlStr, err = regutil.SharpParamMatchReplace(sqlStr, paramNames[i])
-		if nil != err {
-			return
-		}
-	}
-
-	resultType = sqlMapper.ResultType
-
-	var param interface{}
-	paramsSize := len(params)
-	if paramsSize > 0 {
-		if paramsSize == 1 {
-			param = params[0]
-		} else {
-			param = params
-		}
-
-		paramVal := reflect.ValueOf(param)
-		kind := paramVal.Kind()
-		switch {
-		//arr param process
-		case kind == reflect.Array || kind == reflect.Slice:
-			for i := 0; i < paramVal.Len() && i < len(paramNames); i++ {
-				itemVal := paramVal.Index(i)
-				sqlParams = append(sqlParams, itemVal.Interface())
-			}
-		//map param process
-		case kind == reflect.Map:
-			paramMap := param.(map[string]interface{})
-			for i := 0; i < len(paramNames); i++ {
-				item := paramMap[paramNames[i]]
-				if nil == item {
-					err = errors.New("params must not be nil")
-					return
-				}
-				sqlParams = append(sqlParams, item)
-			}
-		//struct param process
-		case kind == reflect.Struct:
-			paramVal := reflect.ValueOf(param)
-			if paramVal.Kind() == reflect.Ptr {
-				err = errors.New("struct params must not be ptr")
-				return
-			}
-			for i := 0; i < len(paramNames); i++ {
-				item := datautil.FieldToParams(param, paramNames[i])
-				if nil == item {
-					err = errors.New("no this params:" + paramNames[i])
-					return
-				}
-				sqlParams = append(sqlParams, item)
-			}
-		//base type param process
-		case kind == reflect.Bool ||
-			kind == reflect.Int ||
-			kind == reflect.Int8 ||
-			kind == reflect.Int16 ||
-			kind == reflect.Int32 ||
-			kind == reflect.Int64 ||
-			kind == reflect.Uint ||
-			kind == reflect.Uint8 ||
-			kind == reflect.Uint16 ||
-			kind == reflect.Uint32 ||
-			kind == reflect.Uint64 ||
-			kind == reflect.Uintptr ||
-			kind == reflect.Float32 ||
-			kind == reflect.Float64 ||
-			kind == reflect.Complex64 ||
-			kind == reflect.Complex128 ||
-			kind == reflect.String:
-			sqlParams = append(sqlParams, param)
-		}
-	}
-
-	log.Println("sql:", sqlStr)
-	log.Println("sqlParams:", sqlParams)
-
-	return
-}
-
 // 处理mapper xml文件，将其转化成
 func (gobatis *goBatis) sqlMapperProcess(name string) {
 	file, err := os.Open(name)
@@ -448,52 +318,39 @@ func (gobatis *goBatis) sqlMapperProcess(name string) {
 	}
 	defer file.Close()
 
-	decoder := xml.NewDecoder(file)
-
-	mapper := mapper{}
-	decoder.Decode(&mapper)
+	mapper := mapperstmt.GetStmtMapper(file)
 
 	// 解析生成insert stmt模板
 	for _, insertStmt := range mapper.InsertStmts {
-		sm := stmtProcess(mapper, insertStmt)
-		gobatis.sqlMappers[sm.Id] = sm
+		id := getMapperId(mapper, insertStmt)
+		gobatis.sqlMappers[id] = insertStmt
 	}
 
 	// 解析生成delete stmt模板
 	for _, deleteStmt := range mapper.DeleteStmts {
-		sm := stmtProcess(mapper, deleteStmt)
-		gobatis.sqlMappers[sm.Id] = sm
+		id := getMapperId(mapper, deleteStmt)
+		gobatis.sqlMappers[id] = deleteStmt
 	}
 
 	// 解析生成update stmt模板
 	for _, updateStmt := range mapper.UpdateStmts {
-		sm := stmtProcess(mapper, updateStmt)
-		gobatis.sqlMappers[sm.Id] = sm
+		id := getMapperId(mapper, updateStmt)
+		gobatis.sqlMappers[id] = updateStmt
 	}
 
 	// 解析生成select stmt模板
 	for _, selectStmt := range mapper.SelectStmts {
-		sm := stmtProcess(mapper, selectStmt)
-		gobatis.sqlMappers[sm.Id] = sm
+		id := getMapperId(mapper, selectStmt)
+		gobatis.sqlMappers[id] = selectStmt
 	}
 }
 
-// 处理stmt，生成sqlMapper
-func stmtProcess(mapper mapper, stmt stmt) (sm sqlMapper) {
-	sqlMapper := sqlMapper{}
-
-	id := stmt.Id
+func getMapperId(mapper mapperstmt.StmtMapper, node mapperstmt.SqlNode) string {
+	id := ""
 	if mapper.Namespace != "" {
-		id = mapper.Namespace + "#" + id
+		id += (mapper.Namespace + ".")
 	}
-	resultType := stmt.ResultType
-	sqlStr := stmt.SQL
+	id += node.Id
 
-	sqlMapper.Id = id
-	sqlMapper.SQL = sqlStr
-	sqlMapper.ResultType = resultType
-
-	log.Println("sql mapper init: -->", id, resultType, sqlStr)
-
-	return sqlMapper
+	return id
 }
