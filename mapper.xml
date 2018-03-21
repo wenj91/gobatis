@@ -10,6 +10,15 @@
         insert into user (name, email, create_time)
         values (#{Name}, #{Email}, #{CrtTm})
     </insert>
+
+    <insert id="insertStructsBatch">
+        insert into user (name, email, create_time)
+        values
+        <foreach collection="list" open="(" close=")" separator=",">
+            #{Name}, #{Email}, #{CrtTm}
+        </foreach>
+    </insert>
+
     <delete id="deleteById">
         delete from user where id=#{id}
     </delete>
