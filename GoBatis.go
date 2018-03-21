@@ -14,7 +14,7 @@ import (
 
 //next todo:
 //0 todo: 单元测试编写
-//1 todo: 批量插入修改<for>标签实现
+//1 done: 批量插入修改<for>标签实现
 //2 todo: 动态sql生成<if>标签实现
 //3 todo: ${xxx}解析实现
 //4 todo: 结果集映射<resultMap>标签实现
@@ -184,7 +184,7 @@ func (gobatis *goBatis) Select(id string, params ...interface{}) func(results ..
 //		error: 错误信息
 func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, error) {
 	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
-	boundSql, err := ss.GetBoundSql(params)
+	boundSql, err := ss.GetBoundSql(params...)
 	if nil != err {
 		log.Println(err)
 		return 0, 0, err
@@ -219,13 +219,6 @@ func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, erro
 	return int(insertId), int(affected), err
 }
 
-//func (gobatis *goBatis) InsertBatch(id string, params ...interface{}) (int, error) {
-//
-//	//todo:
-//
-//	return 0, nil
-//}
-
 // 删除操作
 // @method:
 // 		insert
@@ -239,7 +232,7 @@ func (gobatis *goBatis) Insert(id string, params ...interface{}) (int, int, erro
 func (gobatis *goBatis) Delete(id string, params ...interface{}) (int, error) {
 
 	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
-	boundSql, err := ss.GetBoundSql(params)
+	boundSql, err := ss.GetBoundSql(params...)
 	if nil != err {
 		log.Println(err)
 		return 0, err
@@ -272,7 +265,7 @@ func (gobatis *goBatis) Delete(id string, params ...interface{}) (int, error) {
 
 func (gobatis *goBatis) Update(id string, params ...interface{}) (int, error) {
 	ss := sqlsource.NewSqlSource(gobatis.sqlMappers[id])
-	boundSql, err := ss.GetBoundSql(params)
+	boundSql, err := ss.GetBoundSql(params...)
 	if nil != err {
 		log.Println(err)
 		return 0, err
@@ -302,12 +295,6 @@ func (gobatis *goBatis) Update(id string, params ...interface{}) (int, error) {
 
 	return int(affected), nil
 }
-
-//func (gobatis *goBatis) UpdateBatch(id string, params ...interface{}) (int, error) {
-//	//todo:
-//
-//	return 0, nil
-//}
 
 // 处理mapper xml文件，将其转化成
 func (gobatis *goBatis) sqlMapperProcess(name string) {

@@ -2,14 +2,14 @@
 
 ## TODO
 0 todo: 单元测试编写  
-1 todo: 批量插入修改<for>标签实现  
+1 todo: 批量插入修改<for>标签实现-->done  
 2 todo: 动态sql生成<if>标签实现  
 3 todo: ${xxx}解析实现  
 4 todo: 结果集映射<resultMap>标签实现  
 5 todo: 公共查询字段<sql>标签实现  
 6 todo: 一级缓存实现  
 7 todo: 二级缓存实现   
-8 todo: 加入连接池 
+8 todo: 加入连接池   
 9 todo: 完善文档  
 
 #### mapper配置文件
@@ -56,15 +56,15 @@ func main(){
     
     //传入id查询Map
     mapRes := make(map[string]interface{})
-    i, err := gobatis.Select("Mapper#findMapById", 1)(mapRes)
-    fmt.Println("Mapper#findMapById-->", i, mapRes, err)
+    i, err := gobatis.Select("Mapper.findMapById", 1)(mapRes)
+    fmt.Println("Mapper.findMapById-->", i, mapRes, err)
     	
     //根据传入实体查询对象
     param := User{
         Id: structs.NullInt64{3, true},
     }
     structRes2 := User{}
-    i, err = gobatis.Select("Mapper#findStructByStruct", param)(&structRes2)
-    fmt.Println("Mapper#findStructByStruct-->", i, structRes2, err)
+    i, err = gobatis.Select("Mapper.findStructByStruct", param)(&structRes2)
+    fmt.Println("Mapper.findStructByStruct-->", i, structRes2, err)
 }
 ```
