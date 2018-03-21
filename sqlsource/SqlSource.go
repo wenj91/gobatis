@@ -1,8 +1,8 @@
 package sqlsource
 
 import (
-	"github.com/wenj91/boundsql"
-	"github.com/wenj91/mapperstmt"
+	"github.com/wenj91/gobatis/boundsql"
+	"github.com/wenj91/gobatis/mapperstmt"
 	"errors"
 	"strings"
 	"log"
