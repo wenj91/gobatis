@@ -29,6 +29,7 @@ func DynamicGetBoundSql(sqlNode mapperstmt.SqlNode, param interface{}) (boundsql
 			//node process
 			node := eles[i].Val.(xmlparser.Node)
 			nodeType := node.Name
+			//这部分需要重构下
 			switch nodeType {
 			case "foreach":
 				subSqlStr, subSqlParams, errTmp := tagprocess.ForeachProcess(node, param)
