@@ -1,5 +1,7 @@
 # gobatis
 
+目前代码都是基于mysql编写测试的,其他数据库不保证
+
 ## TODO
 0 todo: 单元测试编写  
 1 todo: 批量插入修改<for>标签实现-->done  
