@@ -10,7 +10,6 @@
         insert into user (name, email, create_time)
         values (#{Name}, #{Email}, #{CrtTm})
     </insert>
-
     <insert id="insertStructsBatch">
         insert into user (name, email, create_time)
         values
@@ -18,6 +17,10 @@
             #{Name}, #{Email}, #{CrtTm}
         </foreach>
     </insert>
+    <update id="updateByStruct">
+        update user set name = #{Name}, email = #{Email}
+        where id = #{Id}
+    </update>
 
     <delete id="deleteById">
         delete from user where id=#{id}

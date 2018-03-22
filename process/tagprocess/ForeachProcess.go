@@ -110,7 +110,9 @@ func ForeachProcess(foreachNode xmlparser.Node, param interface{}) (subSqlStr st
 	}
 
 	//转化sql语句
-	for i := 0; i < finalParamValLen; i++ {
+	//paramNames
+	paramsLen := len(paramNames)
+	for i := 0; i < paramsLen/finalParamValLen; i++ {
 		subSqlStr, err = regutil.SharpParamMatchReplace(subSqlStr, paramNames[i])
 		if nil != err {
 			return
