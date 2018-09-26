@@ -1,6 +1,11 @@
 package gobatis
 
-func GetFieldMapperByTagName(t interface{}, tagName string) (map[string]string, error){
+import (
+	"reflect"
+	"errors"
+)
+
+func getFieldMapperByTagName(t interface{}, tagName string) (map[string]string, error){
 	res := make(map[string]string)
 
 	v := reflect.ValueOf(t)
