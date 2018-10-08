@@ -4,7 +4,6 @@ import (
 	"github.com/araddon/qlbridge/expr"
 	"github.com/araddon/qlbridge/datasource"
 	"github.com/araddon/qlbridge/vm"
-        "github.com/araddon/qlbridge/value"
 )
 
 func exprProcess(expression string, mapper map[string]interface{})  bool  {
