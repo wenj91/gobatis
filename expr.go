@@ -4,11 +4,12 @@ import (
 	"github.com/araddon/qlbridge/expr"
 	"github.com/araddon/qlbridge/datasource"
 	"github.com/araddon/qlbridge/vm"
-  "github.com/araddon/qlbridge/value"
+        "github.com/araddon/qlbridge/value"
 )
 
-func exprProcess(expression string, mapper map[string]interface{}) (value.Value, bool)  {
+func exprProcess(expression string, mapper map[string]interface{})  bool  {
 	exprAst := expr.MustParse(expression)
 	evalContext := datasource.NewContextSimpleNative(mapper)
-	return vm.Eval(evalContext, exprAst)
+	v, _ := vm.Eval(evalContext, exprAst)
+	return v.Value().(bool)
 }
