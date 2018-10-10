@@ -75,65 +75,79 @@ type foreachSqlNode struct {
 
 func (this *foreachSqlNode) build(ctx *dynamicContext) bool {
 	collection, ok := ctx.params[this.collection]
-
-	ctx.appendSql(this.open + " ")
-
-	if ok {
-		val := reflect.ValueOf(collection)
-
-		if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
-			return false
-		}
-
-		for i := 0; i < val.Len(); i++ {
-			v := val.Index(i)
-			if v.Kind() == reflect.Ptr {
-				v = v.Elem()
-			}
-
-			keys := make([]string, 0)
-			params := make(map[string]interface{})
-			switch v.Kind() {
-			case reflect.Struct :
-
-			case reflect.Map:
-				m := v.Interface().(map[string]interface{})
-				for k, v := range m{
-					key := this.item + "." + k
-					keys = append(keys, key)
-					params[key] = v
-				}
-			default:
-				keys = append(keys, this.item)
-				params[this.item] = v.Interface()
-			}
-
-			tempCtx := &dynamicContext{
-				params: params,
-			}
-
-			this.sqlNode.build(tempCtx)
-
-			this.tokenHandler(tempCtx, i)
-
-			if i != 0 {
-				ctx.appendSql(this.separator + " ")
-			}
-
-			ctx.appendSql(tempCtx.sqlStr)
-
-			for _, k := range keys{
-				delete(tempCtx.params, k)
-			}
-
-			for k, v := range tempCtx.params {
-				ctx.params[k] = v
-			}
-		}
-
+	if !ok {
+		log.Println("No collection for foreach tag:", this.collection)
+		return false
 	}
 
-	ctx.appendSql(this.close + " ")
+	ctx.appendSql(this.open)
+
+	val := reflect.ValueOf(collection)
+
+	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
+		log.Println("Foreach tag collection must not be slice or array")
+		return false
+	}
+
+	for i := 0; i < val.Len(); i++ {
+		v := val.Index(i)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem()
+		}
+
+		// convert struct map val to params
+		keys := make([]string, 0)
+		params := make(map[string]interface{})
+		switch v.Kind() {
+		case reflect.Array, reflect.Slice:
+			log.Println("Foreach tag collection element must not be slice or array")
+			return false
+		case reflect.Struct:
+			m := this.structToMap(v.Interface())
+			for k, v := range m {
+				key := this.item + "." + k
+				keys = append(keys, key)
+				params[key] = v
+			}
+		case reflect.Map:
+			m := v.Interface().(map[string]interface{})
+			for k, v := range m {
+				key := this.item + "." + k
+				keys = append(keys, key)
+				params[key] = v
+			}
+		default:
+			keys = append(keys, this.item)
+			params[this.item] = v.Interface()
+		}
+
+		params[this.item] = v.Interface()
+
+		tempCtx := &dynamicContext{
+			params: params,
+		}
+
+		this.sqlNode.build(tempCtx)
+		this.tokenHandler(tempCtx, i)
+
+		if i != 0 {
+			ctx.appendSql(this.separator)
+		}
+
+		ctx.appendSql(tempCtx.sqlStr)
+
+		// del temp param
+		for _, k := range keys {
+			delete(tempCtx.params, k)
+		}
+
+		// sync tempCtx params to ctx
+		for k, v := range tempCtx.params {
+			ctx.params[k] = v
+		}
+	}
+	ctx.appendSql(this.close)
+
 	return true
 }
 
@@ -149,12 +163,12 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 		}
 
 		if i != 0 && i < len(sqlStr) {
-			if string([]byte{sqlStr[i-1], sqlStr[i]}) == "#{"{
+			if string([]byte{sqlStr[i-1], sqlStr[i]}) == "#{" {
 				start = i
 			}
 		}
 
-		if start != 0 && i < len(sqlStr) -1 && sqlStr[i + 1] == '}'{
+		if start != 0 && i < len(sqlStr)-1 && sqlStr[i+1] == '}' {
 			finalSqlStr += sqlStr[:start+1]
 			sqlStr = sqlStr[i+2:]
 
@@ -164,7 +178,9 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 			s = strings.Trim(s, " ")
 			if strings.Contains(s, itemPrefix) {
 				itemKey := strings.Trim(itemStr, " ")
-				ctx.params[s] = ctx.params[itemKey]
+				if v, ok := ctx.params[itemKey]; ok {
+					ctx.params[s] = v
+				}
 			}
 
 			finalSqlStr += s + "}"
@@ -179,6 +195,24 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 	ctx.sqlStr = finalSqlStr
 }
 
+func (this *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
+	objVal := reflect.ValueOf(s)
+	if objVal.Kind() == reflect.Ptr {
+		objVal = objVal.Elem()
+	}
+
+	res := make(map[string]interface{})
+	objType := objVal.Type()
+	for i:=0; i<objVal.NumField(); i++{
+		fieldVal := objVal.Field(i)
+		if fieldVal.CanInterface() {
+			field := objType.Field(i)
+			res[field.Name]=fieldVal.Interface()
+		}
+	}
+
+	return res
+}
 
 // set node
 
