@@ -85,7 +85,7 @@ func (this *foreachSqlNode) build(ctx *dynamicContext) bool {
 	val := reflect.ValueOf(collection)
 
 	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
-		log.Println("Foreach tag collection must not be slice or array")
+		log.Println("Foreach tag collection must be slice or array")
 		return false
 	}
 
