@@ -1,8 +1,8 @@
 package gobatis
 
 import (
-	"reflect"
 	"errors"
+	"reflect"
 )
 
 func getFieldMapperByTagName(t interface{}, tagName string) (map[string]string, error){

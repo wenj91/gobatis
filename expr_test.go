@@ -1,3 +1,5 @@
+package gobatis
+
 import (
 	"fmt"
 	"testing"
@@ -9,10 +11,10 @@ type TestUser struct {
 
 func TestExpr_eval(t *testing.T) {
 	params := map[string]interface{}{
-		"name":"wenj91",
-		"user":&TestUser{Name:"wenj91"},
-		"m": map[string]interface{}{"user":&TestUser{Name:"wenj91"}},
-		"m1": map[string]interface{}{"name":"wenj91"},
+		"name": "wenj91",
+		"user": &TestUser{Name: "wenj91"},
+		"m":    map[string]interface{}{"user": &TestUser{Name: "wenj91"}},
+		"m1":   map[string]interface{}{"name": "wenj91"},
 	}
 	expression := []string{
 		"1 != 1",
