@@ -15,7 +15,7 @@ type dynamicSqlSource struct {
 	sqlNode iSqlNode
 }
 
-func (*dynamicSqlSource) getBoundSql() boundSql {
+func (this *dynamicSqlSource) getBoundSql() boundSql {
 	panic("implement me")
 }
 
@@ -24,7 +24,7 @@ type staticSqlSource struct {
 	paramMappings []string
 }
 
-func (*staticSqlSource) getBoundSql() boundSql {
+func (this *staticSqlSource) getBoundSql() boundSql {
 	panic("implement me")
 }
 
