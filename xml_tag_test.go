@@ -114,7 +114,7 @@ func TestMixedSqlNode_build(t *testing.T) {
 		"array2": []s{{A: "aa"}, {A: "bb"}, {A: "cc"}},
 	}
 
-	mixedSqlNode := mixedSqlNode{
+	mixedSqlNode := &mixedSqlNode{
 		sqlNodes: []iSqlNode{
 			&textSqlNode{
 				content: "select 1 from t_gap where 1 = 1",

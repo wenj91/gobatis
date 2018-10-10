@@ -2,6 +2,7 @@ package gobatis
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"regexp"
 	"strings"
@@ -41,7 +42,7 @@ type ifSqlNode struct {
 }
 
 func (this *ifSqlNode) build(ctx *dynamicContext) bool {
-	if ok := exprProcess(this.test, ctx.params); ok {
+	if ok := eval(this.test, ctx.params); ok {
 		this.sqlNode.build(ctx)
 		return true
 	}
@@ -189,6 +190,10 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 			start = 0
 			itemStr = ""
 		}
+	}
+
+	if start != 0{
+		log.Println("WARN: token not close")
 	}
 
 	finalSqlStr += sqlStr
