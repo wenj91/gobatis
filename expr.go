@@ -9,7 +9,7 @@ func eval(expression string, mapper map[string]interface{}) bool {
 	ok, err := expr.Eval(expression, mapper)
 	if nil != err {
 		// panic here or better ??
-		log.Println(expression, "eval result err:", err)
+		log.Println("[WARN]", "Expression:", expression, ">>> eval result err:", err)
 		return false
 	}
 
