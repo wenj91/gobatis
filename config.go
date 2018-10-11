@@ -5,21 +5,16 @@ import (
 	"sync"
 )
 
-type mappedStmt struct {
-	dbid      string
-	sqlSource iSqlSource
-}
-
 type config struct {
 	mappedStmts map[string]*node
-	mu sync.Mutex
+	mu          sync.Mutex
 }
 
 func (this *config) put(id string, n *node) bool {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
-	if _, ok := this.mappedStmts[id]; ok{
+	if _, ok := this.mappedStmts[id]; ok {
 		return false
 	}
 
@@ -27,14 +22,16 @@ func (this *config) put(id string, n *node) bool {
 	return true
 }
 
-func (this *config) get(id string) *node {
-	return this.mappedStmts[id]
-}
-
 func (this *config) getMappedStmt(id string) *mappedStmt {
 	rootNode, ok := this.mappedStmts[id]
 	if !ok {
 		log.Fatalln("Can not find id:", id, "mapped stmt")
+	}
+
+	resultType := ""
+	resultTypeAttr, ok := rootNode.Attrs["resultType"]
+	if ok {
+		resultType = resultTypeAttr.Value
 	}
 
 	sn := createSqlNode(rootNode.Elements...)
@@ -44,7 +41,7 @@ func (this *config) getMappedStmt(id string) *mappedStmt {
 	}
 
 	return &mappedStmt{
-		sqlSource:ds,
+		sqlSource:  ds,
+		resultType: resultType,
 	}
 }
-
