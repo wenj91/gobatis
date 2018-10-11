@@ -3,6 +3,7 @@ package gobatis
 import (
 	"encoding/xml"
 	"io"
+	"log"
 	"strings"
 )
 
@@ -25,7 +26,7 @@ type element struct {
 	Val         interface{}
 }
 
-func parse(r io.Reader) node {
+func parse(r io.Reader) *node {
 	parser := xml.NewDecoder(r)
 	var root node
 
@@ -101,5 +102,10 @@ func parse(r io.Reader) node {
 		}
 	}
 
-	return root
+	if st.Len() != 0 {
+		log.Fatalln("Parse xml error, there is tag no close, please check your xml config!")
+	}
+
+	return &root
 }
+
