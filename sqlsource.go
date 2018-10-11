@@ -7,7 +7,6 @@ import (
 
 type boundSql struct {
 	sqlStr        string
-	resultType    string
 	paramMappings []string
 	params        map[string]interface{}
 	extParams     map[string]interface{}
