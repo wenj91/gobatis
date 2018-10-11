@@ -1,6 +1,10 @@
 package gobatis
 
-import "log"
+import (
+	"io"
+	"log"
+	"strings"
+)
 
 func createSqlNode(elems ...element) iSqlNode {
 	if len(elems) == 0 {
