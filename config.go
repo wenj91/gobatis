@@ -1,9 +1,50 @@
 package gobatis
 
-type config struct {
+import (
+	"log"
+	"sync"
+)
 
+type mappedStmt struct {
+	dbid      string
+	sqlSource iSqlSource
 }
 
-// statments mapper
+type config struct {
+	mappedStmts map[string]*node
+	mu sync.Mutex
+}
 
-// result mapper
+func (this *config) put(id string, n *node) bool {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
+	if _, ok := this.mappedStmts[id]; ok{
+		return false
+	}
+
+	this.mappedStmts[id] = n
+	return true
+}
+
+func (this *config) get(id string) *node {
+	return this.mappedStmts[id]
+}
+
+func (this *config) getMappedStmt(id string) *mappedStmt {
+	rootNode, ok := this.mappedStmts[id]
+	if !ok {
+		log.Fatalln("Can not find id:", id, "mapped stmt")
+	}
+
+	sn := createSqlNode(rootNode.Elements...)
+
+	ds := &dynamicSqlSource{
+		sqlNode: sn,
+	}
+
+	return &mappedStmt{
+		sqlSource:ds,
+	}
+}
+
