@@ -87,3 +87,43 @@ func createSqlNode(elems ...element) iSqlNode {
 		sqlNodes: sns,
 	}
 }
+
+func buildConfig(r io.Reader) *config  {
+	rootNode := parse(r)
+
+	conf := &config{
+		mappedStmts: make(map[string]*node),
+	}
+
+	if rootNode.Name != "mapper" {
+		log.Fatalln("Mapper xml must start with `mapper` tag, please check your xml config!")
+	}
+
+	namespace := ""
+	if val, ok := rootNode.Attrs["namespace"]; ok {
+		nStr := strings.TrimSpace(val.Value)
+		if nStr != "" {
+			nStr += "."
+		}
+		namespace = nStr
+	}
+
+	for _, elem := range rootNode.Elements {
+		if elem.ElementType == eleTpNode {
+			childNode := elem.Val.(node)
+			switch childNode.Name {
+			case "select", "update", "insert", "delete":
+				if childNode.Id == "" {
+					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml config!")
+				}
+
+				fid := namespace + childNode.Id
+				if ok := conf.put(fid, &childNode); !ok {
+					log.Fatalln("Repeat id for:", fid, "Please check your xml config!")
+				}
+			}
+		}
+	}
+
+	return conf
+}
