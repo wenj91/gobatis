@@ -29,10 +29,15 @@ func (this *config) getMappedStmt(id string) *mappedStmt {
 	}
 
 	resultType := ""
-	resultTypeAttr, ok := rootNode.Attrs["resultType"]
-	if ok {
+	if rootNode.Name == "select" {
+		resultTypeAttr, ok := rootNode.Attrs["resultType"]
+		if !ok {
+			log.Fatalln("Tag `<select>` must have resultType attr!")
+		}
+
 		resultType = resultTypeAttr.Value
 	}
+
 
 	sn := createSqlNode(rootNode.Elements...)
 
