@@ -145,7 +145,7 @@ func NewFileLog(fileName string, level LogLevel) ILogger {
 func (this *logger) getPrefix(flag string) string {
 	prefix := fmt.Sprintf("%s [%5s] - ", now(), flag)
 	callers := getCallers()
-	if len(callers) >= 6 {
+	if len(callers) >= (3 + this.callStepDepth + 1) {
 		prefix = fmt.Sprintf("%s [%5s] [%s] - ", now(), flag, callers[3+this.callStepDepth])
 	}
 
