@@ -1,17 +1,17 @@
 package gobatis
 
 import (
-	"container/list"
+	l "container/list"
 	"sync"
 )
 
 type stack struct {
-	list *list.List
+	list *l.List
 	mu sync.Mutex
 }
 
 func NewStack() *stack {
-	list := list.New()
+	list := l.New()
 	return &stack{list: list,}
 }
 
