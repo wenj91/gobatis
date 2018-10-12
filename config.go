@@ -1,6 +1,6 @@
 package gobatis
 
 type config struct {
-	dbConf dbConfig
-	mapperConf mapperConfig
+	dbConf     *dbConfig
+	mapperConf *mapperConfig
 }
