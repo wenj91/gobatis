@@ -5,12 +5,12 @@ import (
 	"sync"
 )
 
-type config struct {
+type mapperConfig struct {
 	mappedStmts map[string]*node
 	mu          sync.Mutex
 }
 
-func (this *config) put(id string, n *node) bool {
+func (this *mapperConfig) put(id string, n *node) bool {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
@@ -22,7 +22,7 @@ func (this *config) put(id string, n *node) bool {
 	return true
 }
 
-func (this *config) getMappedStmt(id string) *mappedStmt {
+func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 	rootNode, ok := this.mappedStmts[id]
 	if !ok {
 		log.Fatalln("Can not find id:", id, "mapped stmt")
