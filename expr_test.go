@@ -35,8 +35,18 @@ func TestExpr_eval(t *testing.T) {
 		"m.user.Name == 'wenj91' || 1 != 1",
 	}
 
-	for _, ex := range expression {
+	for i, ex := range expression {
 		ok := eval(ex, params)
-		fmt.Printf("Eexpr:%v >>>> Result:%v \n", ex, ok)
+		fmt.Printf("Index:%v Expr:%v >>>> Result:%v \n", i, ex, ok)
+		assertExpr(i, ok, ex)
+	}
+}
+
+func assertExpr(i int, ok bool, expr string)  {
+	switch i {
+	case 0, 3, 4, 6, 8, 9, 12, 14: // false
+		assertNotTrue(ok, "Expr:" + expr + " Result:true")
+	case 1, 2, 5, 7, 10, 11, 13, 15: // true
+		assertTrue(ok, "Expr:" + expr + " Result:false")
 	}
 }
