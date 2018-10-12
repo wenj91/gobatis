@@ -31,3 +31,21 @@ func assertNil(a interface{}, message string)  {
 		log.Fatal(message)
 	}
 }
+
+func assertTrue(ok bool, message string)  {
+	if !ok {
+		if message == "" {
+			message = fmt.Sprintf("ok == false")
+		}
+		log.Fatal(message)
+	}
+}
+
+func assertNotTrue(ok bool, message string)  {
+	if ok {
+		if message == "" {
+			message = fmt.Sprintf("ok == true")
+		}
+		log.Fatal(message)
+	}
+}
