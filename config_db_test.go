@@ -2,8 +2,6 @@ package gobatis
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v2"
-	"log"
 	"testing"
 )
 
@@ -18,11 +16,7 @@ mappers:
   - userMapper.xml
   - orderMapper.xml
 `
-	dbconf := &dbConfig{}
-	err := yaml.Unmarshal([]byte(ymlStr), &dbconf)
-	if err != nil {
-		log.Fatalf("error: %v", err)
-	}
+	dbconf := buildDbConfig(ymlStr)
 
 	assertEqual(dbconf.DB.DriverName, "mysql", "test fail, actual:" + dbconf.DB.DriverName)
 	assertEqual(dbconf.DB.DataSourceName, "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", "test fail, actual:" + dbconf.DB.DataSourceName)
