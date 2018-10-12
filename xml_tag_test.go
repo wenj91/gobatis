@@ -5,16 +5,6 @@ import (
 	"testing"
 )
 
-func assertEqual(t *testing.T, a interface{}, b interface{}, message string) {
-	if a == b {
-		return
-	}
-	if len(message) == 0 {
-		message = fmt.Sprintf("%v != %v", a, b)
-	}
-	t.Fatal(message)
-}
-
 type s struct {
 	A string
 }
@@ -32,7 +22,7 @@ func TestTextSqlNode_build(t *testing.T) {
 	textSqlNode.build(ctx)
 
 	expc := "select 1 from t_gap "
-	assertEqual(t, ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
+	assertEqual(ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
 }
 
 func TestIfSqlNode_True_build(t *testing.T) {
@@ -52,7 +42,7 @@ func TestIfSqlNode_True_build(t *testing.T) {
 	ifSqlNode.build(ctx)
 
 	expc := "select 1 from t_gap "
-	assertEqual(t, ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
+	assertEqual(ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
 }
 
 func TestIfSqlNode_False_build(t *testing.T) {
@@ -72,7 +62,7 @@ func TestIfSqlNode_False_build(t *testing.T) {
 	ifSqlNode.build(ctx)
 
 	expc := ""
-	assertEqual(t, ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
+	assertEqual(ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
 }
 
 func TestForeachSqlNode_build(t *testing.T)  {
@@ -100,10 +90,10 @@ func TestForeachSqlNode_build(t *testing.T)  {
 	f.build(ctx)
 
 	expc := "select 1 from t_gap where id in ( #{_ls_item_p_item0}  , #{_ls_item_p_item1}  , #{_ls_item_p_item2}  ) "
-	assertEqual(t, ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
-	assertEqual(t, ctx.params["_ls_item_p_item0"], 1, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item0"]))
-	assertEqual(t, ctx.params["_ls_item_p_item1"], 2, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item1"]))
-	assertEqual(t, ctx.params["_ls_item_p_item2"], 3, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item2"]))
+	assertEqual(ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
+	assertEqual(ctx.params["_ls_item_p_item0"], 1, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item0"]))
+	assertEqual(ctx.params["_ls_item_p_item1"], 2, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item1"]))
+	assertEqual(ctx.params["_ls_item_p_item2"], 3, "test failed, actual:" + fmt.Sprintf("%d", ctx.params["_ls_item_p_item2"]))
 }
 
 func TestMixedSqlNode_build(t *testing.T) {
@@ -155,8 +145,8 @@ func TestMixedSqlNode_build(t *testing.T) {
 	mixedSqlNode.build(ctx)
 
 	expc := "select 1 from t_gap where 1 = 1 and name = #{name} and id in ( #{_ls_item_p_item0.A}  , #{_ls_item_p_item1.A}  , #{_ls_item_p_item2.A}  ) "
-	assertEqual(t, ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
-	assertEqual(t, ctx.params["_ls_item_p_item0.A"], "aa", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item0.A"]))
-	assertEqual(t, ctx.params["_ls_item_p_item1.A"], "bb", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item1.A"]))
-	assertEqual(t, ctx.params["_ls_item_p_item2.A"], "cc", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item2.A"]))
+	assertEqual(ctx.sqlStr, expc, "test failed, actual:" + ctx.sqlStr)
+	assertEqual(ctx.params["_ls_item_p_item0.A"], "aa", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item0.A"]))
+	assertEqual(ctx.params["_ls_item_p_item1.A"], "bb", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item1.A"]))
+	assertEqual(ctx.params["_ls_item_p_item2.A"], "cc", "test failed, actual:" + fmt.Sprintf("%s", ctx.params["_ls_item_p_item2.A"]))
 }
