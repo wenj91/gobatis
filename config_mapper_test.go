@@ -29,7 +29,7 @@ func TestBuildConfig(t *testing.T)  {
 </mapper>
 `
 	r:= strings.NewReader(xmlStr)
-	conf := buildConfig(r)
+	conf := buildMapperConfig(r)
 	assertNotNil(conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
 	assertNotNil(conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
 	assertNotNil(conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
