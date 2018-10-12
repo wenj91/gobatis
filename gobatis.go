@@ -22,10 +22,10 @@ const (
 )
 
 type gbBase struct {
-	db     dbRunner
-	dbType DbType
+	db       dbRunner
+	msConfig mapperConfig
+	dbType   DbType
 }
-
 // gobatis
 type gobatis struct {
 	gbBase
