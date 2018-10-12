@@ -30,8 +30,8 @@ func TestBuildConfig(t *testing.T)  {
 `
 	r:= strings.NewReader(xmlStr)
 	conf := buildConfig(r)
-	assertNotNil(t, conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
-	assertNotNil(t, conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
-	assertNotNil(t, conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
-	assertNotNil(t, conf.getMappedStmt("Mapper.deleteById"), "Mapper.deleteById mapped stmt is nil")
+	assertNotNil(conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
+	assertNotNil(conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
+	assertNotNil(conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
+	assertNotNil(conf.getMappedStmt("Mapper.deleteById"), "Mapper.deleteById mapped stmt is nil")
 }
