@@ -23,7 +23,7 @@ const (
 
 type gbBase struct {
 	db           dbRunner
-	mapperConfig mapperConfig
+	mapperConfig *mapperConfig
 	dbType       DbType
 }
 
