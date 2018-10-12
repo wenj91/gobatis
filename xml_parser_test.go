@@ -1,7 +1,6 @@
 package gobatis
 
 import (
-	"fmt"
 	"strings"
 	"testing"
 )
@@ -13,9 +12,9 @@ func TestXmlNode_parse(t *testing.T) {
     <select id="findMapById" resultType="Map">
 		SELECT id, name FROM user where id=#{id} 
 		<if test="name != nil">
-			<for item="item" open="AND name in (" close=")" separator="," collection="names">
+			<foreach item="item" open="AND name in (" close=")" separator="," collection="names">
 				#{item}
-			</for>
+			</foreach>
 			AND name = #{name}
 		</if>
 		ORDER BY id
@@ -27,5 +26,5 @@ func TestXmlNode_parse(t *testing.T) {
 `
 	r := strings.NewReader(xmlStr)
 	rn := parse(r)
-	fmt.Println(rn)
+	assertNotNil(rn, "Parse xml result is nil")
 }
