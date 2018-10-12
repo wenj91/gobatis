@@ -154,3 +154,10 @@ func (this *tx) Rollback() error {
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
+
+// selectOne(stmt string, param interface{})
+// selectList(stmt string, param interface{})
+// selectMap(stmt string, param interface{})
+// insert(stmt string, param interface{})
+// update(stmt string, param interface{})
+// delete(stmt string, param interface{})
