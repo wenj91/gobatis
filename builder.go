@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"gopkg.in/yaml.v2"
 	"io"
 	"log"
 	"strings"
@@ -28,7 +29,7 @@ func createSqlNode(elems ...element) iSqlNode {
 			}
 		}
 
-		if n.Name == "for" {
+		if n.Name == "foreach" {
 			sqlNode := createSqlNode(n.Elements...)
 
 			open := ""
@@ -49,11 +50,11 @@ func createSqlNode(elems ...element) iSqlNode {
 				separator = separatorAttr.Value
 			}
 
-			item := ""
 			itemAttr, ok := n.Attrs["item"]
-			if ok {
-				item = itemAttr.Value
+			if !ok {
+				log.Fatalln("No attr:`item` for tag:", n.Name)
 			}
+			item := itemAttr.Value
 
 			index := ""
 			indexAttr, ok := n.Attrs["index"]
@@ -61,24 +62,24 @@ func createSqlNode(elems ...element) iSqlNode {
 				index = indexAttr.Value
 			}
 
-			collection := ""
 			collectionAttr, ok := n.Attrs["collection"]
-			if ok {
-				collection = collectionAttr.Value
+			if !ok {
+				log.Fatalln("No attr:`collection` for tag:", n.Name)
 			}
+			collection := collectionAttr.Value
 
 			return &foreachSqlNode{
-				sqlNode:   sqlNode,
-				open:      open,
-				close:     closeStr,
-				separator: separator,
-				item:      item,
-				index:     index,
-				collection:collection,
+				sqlNode:    sqlNode,
+				open:       open,
+				close:      closeStr,
+				separator:  separator,
+				item:       item,
+				index:      index,
+				collection: collection,
 			}
 		}
 
-		log.Fatalln("The tag:", n.Name, "not support, current version only support tag:<if> | <for>")
+		log.Fatalln("The tag:", n.Name, "not support, current version only support tag:<if> | <foreach>")
 	}
 
 	sns := make([]iSqlNode, 0)
@@ -92,15 +93,15 @@ func createSqlNode(elems ...element) iSqlNode {
 	}
 }
 
-func buildConfig(r io.Reader) *config  {
+func buildMapperConfig(r io.Reader) *mapperConfig {
 	rootNode := parse(r)
 
-	conf := &config{
+	conf := &mapperConfig{
 		mappedStmts: make(map[string]*node),
 	}
 
 	if rootNode.Name != "mapper" {
-		log.Fatalln("Mapper xml must start with `mapper` tag, please check your xml config!")
+		log.Fatalln("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
 	}
 
 	namespace := ""
@@ -118,16 +119,26 @@ func buildConfig(r io.Reader) *config  {
 			switch childNode.Name {
 			case "select", "update", "insert", "delete":
 				if childNode.Id == "" {
-					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml config!")
+					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml mapperConfig!")
 				}
 
 				fid := namespace + childNode.Id
 				if ok := conf.put(fid, &childNode); !ok {
-					log.Fatalln("Repeat id for:", fid, "Please check your xml config!")
+					log.Fatalln("Repeat id for:", fid, "Please check your xml mapperConfig!")
 				}
 			}
 		}
 	}
 
 	return conf
+}
+
+func buildDbConfig(ymlStr string) *dbConfig {
+	dbconf := &dbConfig{}
+	err := yaml.Unmarshal([]byte(ymlStr), &dbconf)
+	if err != nil {
+		log.Fatalf("error: %v", err)
+	}
+
+	return dbconf
 }
