@@ -21,6 +21,7 @@ const (
 	resultTypeSlice ResultType = "Slice"
 	// result set is a value slice, item is value slice, []interface{}
 	resultTypeSlices ResultType = "Slices"
+	// result set is single value
 	resultTypeValue  ResultType = "Value"
 )
 
