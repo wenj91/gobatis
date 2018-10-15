@@ -38,7 +38,6 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 		resultType = resultTypeAttr.Value
 	}
 
-
 	sn := createSqlNode(rootNode.Elements...)
 
 	ds := &dynamicSqlSource{
@@ -47,6 +46,6 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 
 	return &mappedStmt{
 		sqlSource:  ds,
-		resultType: resultType,
+		resultType: ResultType(resultType),
 	}
 }
