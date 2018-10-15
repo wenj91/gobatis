@@ -22,7 +22,7 @@ const (
 	// result set is a value slice, item is value slice, []interface{}
 	resultTypeSlices ResultType = "Slices"
 	// result set is single value
-	resultTypeValue  ResultType = "Value"
+	resultTypeValue ResultType = "Value"
 )
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go start
@@ -176,17 +176,20 @@ func (this *tx) Rollback() error {
 
 func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.mapperConfig.getMappedStmt(stmt)
+	ms.dbType = this.dbType
+
 	params := paramProcess(param)
 
 	return func(res interface{}) error {
 		executor := &executor{
-			gb:this,
+			gb: this,
 		}
 		err := executor.query(ms, params, res)
 		return err
 	}
 }
 
+// selectMap(stmt string, param interface{})
 // insert(stmt string, param interface{})
 // update(stmt string, param interface{})
 // delete(stmt string, param interface{})
