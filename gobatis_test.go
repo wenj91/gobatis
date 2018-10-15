@@ -24,6 +24,9 @@ func TestGoBatis(t *testing.T) {
     <select id="findMapById" resultType="Struct">
         SELECT id, name, password, i, f FROM user WHERE id = #{id} ORDER BY id
     </select>
+	<insert id="saveUser">
+		INSERT INTO user SET name = #{Name}, password=#{Password}
+	</insert>
     <insert id="insertStructsBatch">
         insert into user (name, email, create_time)
         values
@@ -32,8 +35,8 @@ func TestGoBatis(t *testing.T) {
         </foreach>
     </insert>
     <update id="updateByStruct">
-        update user set name = #{Name}, email = #{Email}
-        where id = #{Id}
+        update user set name = #{Name} 
+		where id = #{Id}
     </update>
     <delete id="deleteById">
         delete from user where id=#{id}
@@ -107,9 +110,36 @@ mappers:
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result TUser
-	err = gb.SelectOne("Mapper.findMapById", map[string]interface{}{
+	err = gb.Select("Mapper.findMapById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
 	fmt.Println("result:", result, "err:", err)
+
+	u := &TUser{
+		Name: "wenj1991",
+		Password: NullString{
+			String: "654321",
+			Valid:  true,
+		},
+	}
+
+	id, err := gb.Insert("Mapper.saveUser", u)
+	fmt.Println("id:", id, "err:", err)
+
+	uu := &TUser{
+		Id:3,
+		Name: "wenj1993",
+		Password: NullString{
+			String: "654321",
+			Valid:  true,
+		},
+	}
+	affected, err := gb.Update("Mapper.updateByStruct", uu)
+	fmt.Println("affected:", affected, "err:", err)
+
+	affected, err = gb.Delete("Mapper.deleteById", map[string]interface{}{
+		"id":3,
+	})
+	fmt.Println("delete affected:", affected, "err:", err)
 }
