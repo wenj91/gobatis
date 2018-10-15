@@ -44,6 +44,7 @@ db:
   maxLifeTime: 10
   maxOpenConns: 10
   maxIdleConns: 1
+  showSql: true
 mappers:
   - userMapper.xml
   - orderMapper.xml
