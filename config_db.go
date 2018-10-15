@@ -7,7 +7,7 @@ type dbConfig struct {
 		MaxLifeTime    int    `yaml:"maxLifeTime"`
 		MaxOpenConns   int    `yaml:"maxOpenConns"`
 		MaxIdleConns   int    `yaml:"maxIdleConns"`
-		ShowSql        string `yaml:"showSql"`
+		ShowSql        bool   `yaml:"showSql"`
 	} `yaml:"db"`
 	Mappers []string `yaml:"mappers"`
 }
