@@ -174,26 +174,19 @@ func (this *tx) Rollback() error {
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
 
-func (this *gbBase) SelectOne(stmt string, param interface{}) interface{} {
+func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.mapperConfig.getMappedStmt(stmt)
-
 	params := paramProcess(param)
 
-	bs := ms.sqlSource.getBoundSql(params)
-
-	fmt.Println("SQL:", bs.sqlStr)
-	fmt.Println("ParamMappings:", bs.paramMappings)
-	fmt.Println("Params:", bs.params)
-	fmt.Println("ExtParams:", bs.extParams)
-
-	return nil
+	return func(res interface{}) error {
+		executor := &executor{
+			gb:this,
+		}
+		err := executor.query(ms, params, res)
+		return err
+	}
 }
 
-func (this *gbBase) SelectList(stmt string, param interface{}) []interface{}{
-
-	return nil
-}
-// selectMap(stmt string, param interface{})
 // insert(stmt string, param interface{})
 // update(stmt string, param interface{})
 // delete(stmt string, param interface{})
