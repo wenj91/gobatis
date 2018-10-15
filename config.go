@@ -22,6 +22,7 @@ func ConfInit(dbConfPath string)  {
 		log.Fatalln("Open db conf err:", err)
 		return
 	}
+	defer f.Close()
 
 	r, err := ioutil.ReadAll(f)
 	if nil != err {
@@ -48,6 +49,8 @@ func ConfInit(dbConfPath string)  {
 		for k, ms := range mc.mappedStmts {
 			mapperConf.put(k, ms)
 		}
+
+		f.Close()
 	}
 
 	conf = &config{
