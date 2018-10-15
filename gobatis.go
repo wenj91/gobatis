@@ -177,12 +177,11 @@ func (this *tx) Rollback() error {
 
 func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.mapperConfig.getMappedStmt(stmt)
-	if nil != ms {
+	if nil == ms {
 		return func(res interface{}) error {
-			return errors.New("Mapped statement not found")
+			return errors.New("Mapped statement not found:" + stmt)
 		}
 	}
-
 	ms.dbType = this.dbType
 
 	params := paramProcess(param)
@@ -197,5 +196,49 @@ func (this *gbBase) Select(stmt string, param interface{}) func(res interface{})
 }
 
 // insert(stmt string, param interface{})
+func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
+	ms := this.mapperConfig.getMappedStmt(stmt)
+	if nil == ms {
+		return 0, errors.New("Mapped statement not found:" + stmt)
+	}
+	ms.dbType = this.dbType
+
+	params := paramProcess(param)
+
+	executor := &executor{
+		gb: this,
+	}
+
+	lastInsertId, _, err := executor.update(ms, params)
+	if nil != err {
+		return 0, err
+	}
+
+	return lastInsertId, nil
+}
+
 // update(stmt string, param interface{})
+func (this *gbBase) Update(stmt string, param interface{}) (int64, error)  {
+	ms := this.mapperConfig.getMappedStmt(stmt)
+	if nil == ms {
+		return 0, errors.New("Mapped statement not found:" + stmt)
+	}
+	ms.dbType = this.dbType
+
+	params := paramProcess(param)
+
+	executor := &executor{
+		gb: this,
+	}
+
+	_, affected, err := executor.update(ms, params)
+	if nil != err {
+		return 0, err
+	}
+
+	return affected, nil
+}
 // delete(stmt string, param interface{})
+func (this *gbBase) Delete(stmt string, param interface{}) (int64, error)  {
+	return this.Update(stmt, param)
+}
