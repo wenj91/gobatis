@@ -3,7 +3,6 @@ package gobatis
 import (
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"reflect"
 )
@@ -299,8 +298,6 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 			fieldsMapper[tag] = field.Name
 		}
 	}
-
-	fmt.Println("field mapper:", fieldsMapper)
 
 	res := make([]interface{}, 0)
 	for rows.Next() {
