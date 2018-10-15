@@ -3,6 +3,7 @@ package gobatis
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 )
 
@@ -176,6 +177,12 @@ func (this *tx) Rollback() error {
 
 func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.mapperConfig.getMappedStmt(stmt)
+	if nil != ms {
+		return func(res interface{}) error {
+			return errors.New("Mapped statement not found")
+		}
+	}
+
 	ms.dbType = this.dbType
 
 	params := paramProcess(param)
@@ -189,7 +196,6 @@ func (this *gbBase) Select(stmt string, param interface{}) func(res interface{})
 	}
 }
 
-// selectMap(stmt string, param interface{})
 // insert(stmt string, param interface{})
 // update(stmt string, param interface{})
 // delete(stmt string, param interface{})
