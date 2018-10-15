@@ -1,7 +1,7 @@
 package gobatis
 
 type mappedStmt struct {
-	dbid       string
+	dbType     DbType
 	sqlSource  iSqlSource
 	resultType ResultType
 }
