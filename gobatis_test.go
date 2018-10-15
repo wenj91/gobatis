@@ -10,13 +10,19 @@ import (
 	"time"
 )
 
+type TUser struct {
+	Id       int64      `field:"id"`
+	Name     string     `field:"name"`
+	Password NullString `field:"password"`
+}
+
 func TestGoBatis(t *testing.T) {
 
 	xmlStr := `
 <?xml version="1.0" encoding="utf-8"?>
 <mapper namespace="Mapper">
-    <select id="findMapById" resultType="Map">
-        SELECT id, name FROM user where id=#{id} order by id
+    <select id="findMapById" resultType="Struct">
+        SELECT id, name, password, i, f FROM user WHERE id = #{id} ORDER BY id
     </select>
     <insert id="insertStructsBatch">
         insert into user (name, email, create_time)
@@ -34,7 +40,7 @@ func TestGoBatis(t *testing.T) {
     </delete>
 </mapper>
 `
-	r:= strings.NewReader(xmlStr)
+	r := strings.NewReader(xmlStr)
 	mapperConf := buildMapperConfig(r)
 
 	ymlStr := `
@@ -52,8 +58,8 @@ mappers:
 	dbconf := buildDbConfig(ymlStr)
 
 	conf := &config{
-		dbConf:dbconf,
-		mapperConf:mapperConf,
+		dbConf:     dbconf,
+		mapperConf: mapperConf,
 	}
 
 	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
@@ -67,35 +73,43 @@ mappers:
 		panic(err)
 	}
 
-
 	if conf.dbConf.DB.MaxLifeTime == 0 {
 		db.SetConnMaxLifetime(120 * time.Second)
-	}else{
+	} else {
 		db.SetConnMaxLifetime(time.Duration(conf.dbConf.DB.MaxLifeTime) * time.Second)
 	}
 
 	if conf.dbConf.DB.MaxOpenConns == 0 {
 		db.SetMaxOpenConns(10)
-	}else{
+	} else {
 		db.SetMaxOpenConns(conf.dbConf.DB.MaxOpenConns)
 	}
 
 	if conf.dbConf.DB.MaxOpenConns == 0 {
 		db.SetMaxIdleConns(5)
-	}else{
+	} else {
 		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
 	}
 
 	gb := &gobatis{
 		gbBase{
-			db:db,
-			mapperConfig:conf.mapperConf,
+			db:           db,
+			mapperConfig: conf.mapperConf,
 		},
 	}
 
 	res, _ := gb.db.Query("select 1")
-
 	cols, _ := res.Columns()
-
 	fmt.Println(cols)
+
+	//result := make(map[string]interface{})
+	//result := make([]interface{}, 0)
+	//var result interface{}
+	//result := make([]TUser, 0)
+	var result TUser
+	err = gb.SelectOne("Mapper.findMapById", map[string]interface{}{
+		"id": 2,
+	})(&result)
+
+	fmt.Println("result:", result, "err:", err)
 }
