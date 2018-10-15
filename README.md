@@ -1,8 +1,6 @@
 # gobatis
 
-项目重构中。。。。。。
-
-目前代码都是基于mysql编写测试的,其他数据库不保证
+目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
 
 #### mapper配置文件
 ```xml
@@ -32,14 +30,13 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/wenj91/gobatis"
-	"github.com/wenj91/gobatis/structs"
 )
 
 type User struct {
-	Id    structs.NullInt64
-	Name  structs.NullString
-	Email structs.NullString
-	CrtTm structs.NullTime
+	Id    gobatis.NullInt64
+	Name  gobatis.NullString
+	Email gobatis.NullString
+	CrtTm gobatis.NullTime
 }
 
 func main(){
