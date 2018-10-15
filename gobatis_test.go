@@ -5,7 +5,6 @@ import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
-	"strings"
 	"testing"
 	"time"
 )
@@ -17,52 +16,10 @@ type TUser struct {
 }
 
 func TestGoBatis(t *testing.T) {
-
-	xmlStr := `
-<?xml version="1.0" encoding="utf-8"?>
-<mapper namespace="Mapper">
-    <select id="findMapById" resultType="Struct">
-        SELECT id, name, password, i, f FROM user WHERE id = #{id} ORDER BY id
-    </select>
-	<insert id="saveUser">
-		INSERT INTO user SET name = #{Name}, password=#{Password}
-	</insert>
-    <insert id="insertStructsBatch">
-        insert into user (name, email, create_time)
-        values
-        <foreach item="item" collection="list" open="(" close=")" separator=",">
-            #{Name}, #{Email}, #{CrtTm}
-        </foreach>
-    </insert>
-    <update id="updateByStruct">
-        update user set name = #{Name} 
-		where id = #{Id}
-    </update>
-    <delete id="deleteById">
-        delete from user where id=#{id}
-    </delete>
-</mapper>
-`
-	r := strings.NewReader(xmlStr)
-	mapperConf := buildMapperConfig(r)
-
-	ymlStr := `
-db:
-  driverName: mysql
-  dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
-  maxLifeTime: 10
-  maxOpenConns: 10
-  maxIdleConns: 1
-  showSql: true
-mappers:
-  - userMapper.xml
-  - orderMapper.xml
-`
-	dbconf := buildDbConfig(ymlStr)
-
-	conf := &config{
-		dbConf:     dbconf,
-		mapperConf: mapperConf,
+	ConfInit("")
+	if nil == conf {
+		log.Println("db config == nil")
+		return
 	}
 
 	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
@@ -110,7 +67,7 @@ mappers:
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result TUser
-	err = gb.Select("Mapper.findMapById", map[string]interface{}{
+	err = gb.Select("Mapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
