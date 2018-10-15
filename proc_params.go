@@ -56,12 +56,12 @@ func structToMap(s interface{}) map[string]interface{} {
 	tp := objVal.Type()
 	switch tp.Name() {
 	case "Time":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			res["0"] = s.(time.Time).Format("2006-01-02 15:04:05")
 		}
 	case "NullString":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			ns := s.(NullString)
 			if ns.Valid {
@@ -70,7 +70,7 @@ func structToMap(s interface{}) map[string]interface{} {
 			}
 		}
 	case "NullInt64":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			ns := s.(NullInt64)
 			if ns.Valid {
@@ -79,7 +79,7 @@ func structToMap(s interface{}) map[string]interface{} {
 			}
 		}
 	case "NullBool":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			ns := s.(NullBool)
 			if ns.Valid {
@@ -88,7 +88,7 @@ func structToMap(s interface{}) map[string]interface{} {
 			}
 		}
 	case "NullFloat64":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			ns := s.(NullFloat64)
 			if ns.Valid {
@@ -97,7 +97,7 @@ func structToMap(s interface{}) map[string]interface{} {
 			}
 		}
 	case "NullTime":
-		res["0"] = "NULL"
+		res["0"] = nil
 		if nil != s {
 			ns := s.(NullTime)
 			if ns.Valid {
