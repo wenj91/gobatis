@@ -7,4 +7,3 @@ db:
   showSql: true
 mappers:
   - userMapper.xml
-  - orderMapper.xml

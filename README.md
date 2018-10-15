@@ -2,7 +2,31 @@
 
 目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
 
+#### db数据源配置
+db.yml
+```yaml
+# 数据库配置
+db:
+  # 驱动名
+  driverName: mysql
+  # 数据源
+  dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
+  # 连接最大存活时间（单位：s）
+  maxLifeTime: 120
+  # 最大open连接数
+  maxOpenConns: 10
+  # 最大挂起连接数
+  maxIdleConns: 5
+  # 是否显示SQL语句
+  showSql: true
+# 数据表映射文件路径配置
+mappers:
+  - mapper/userMapper.xml
+```
+
 #### mapper配置文件
+
+mapper/userMapper.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <mapper namespace="Mapper">
@@ -23,6 +47,7 @@
 ```
 
 #### 使用方法
+example.go
 ```go
 package main
 
@@ -33,14 +58,14 @@ import (
 )
 
 type User struct {
-	Id    gobatis.NullInt64
-	Name  gobatis.NullString
-	Email gobatis.NullString
-	CrtTm gobatis.NullTime
+	Id    gobatis.NullInt64  `field:"id"`
+	Name  gobatis.NullString `field:"name"`
+	Email gobatis.NullString `field:"email"`
+	CrtTm gobatis.NullTime   `field:"crtTm"`
 }
 
 func main(){
-    mapperPath := []string{"./mapper.xml"}
+    gobatis.ConfInit("db.yml")
     gobatis := gobatis.NewGoBatis("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", mapperPath)
     
     //传入id查询Map

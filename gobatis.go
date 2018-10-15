@@ -242,3 +242,5 @@ func (this *gbBase) Update(stmt string, param interface{}) (int64, error)  {
 func (this *gbBase) Delete(stmt string, param interface{}) (int64, error)  {
 	return this.Update(stmt, param)
 }
+
+
