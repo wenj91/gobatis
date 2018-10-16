@@ -39,6 +39,16 @@ func ConfInit(dbConfPath string)  {
 		return
 	}
 
+	if dbConf.DB.DriverName == "" {
+		log.Fatalln("Db config err: driverName must not be nil")
+		return
+	}
+
+	if dbConf.DB.DataSourceName == "" {
+		log.Fatalln("Db config err: dataSourceName must not be nil")
+		return
+	}
+
 	mapperConf := &mapperConfig{
 		mappedStmts: make(map[string]*node),
 	}
