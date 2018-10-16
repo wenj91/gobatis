@@ -66,19 +66,19 @@ type User struct {
 
 func main(){
     gobatis.ConfInit("db.yml")
-    gobatis := gobatis.NewGoBatis("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", mapperPath)
+    gb := gobatis.NewGobatis()
     
     //传入id查询Map
     mapRes := make(map[string]interface{})
-    i, err := gobatis.Select("Mapper.findMapById", 1)(mapRes)
-    fmt.Println("Mapper.findMapById-->", i, mapRes, err)
+    err := gb.Select("Mapper.findMapById", 1)(mapRes)
+    fmt.Println("Mapper.findMapById-->", mapRes, err)
     	
     //根据传入实体查询对象
     param := User{
-        Id: structs.NullInt64{3, true},
+        Id: gobatis.NullInt64{3, true},
     }
     structRes2 := User{}
-    i, err = gobatis.Select("Mapper.findStructByStruct", param)(&structRes2)
-    fmt.Println("Mapper.findStructByStruct-->", i, structRes2, err)
+    err = gb.Select("Mapper.findStructByStruct", param)(&structRes2)
+    fmt.Println("Mapper.findStructByStruct-->", structRes2, err)
 }
 ```
