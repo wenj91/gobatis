@@ -20,11 +20,7 @@ func TestGoBatis(t *testing.T) {
 		return
 	}
 
-	gb := NewGobatis().(*GbBase)
-
-	res, _ := gb.db.Query("select 1")
-	cols, _ := res.Columns()
-	fmt.Println(cols)
+	gb := NewGobatis()
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)

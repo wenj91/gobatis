@@ -27,6 +27,13 @@ const (
 	resultTypeValue ResultType = "Value"
 )
 
+type GoBatis interface {
+	Select(stmt string, param interface{}) func(res interface{}) error
+	Insert(stmt string, param interface{}) (int64, error)
+	Update(stmt string, param interface{}) (int64, error)
+	Delete(stmt string, param interface{}) (int64, error)
+}
+
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go start
 type dbRunner interface {
 	Prepare(query string) (*sql.Stmt, error)
@@ -42,10 +49,10 @@ const (
 	dbTypePostgres DbType = "postgres"
 )
 
-func NewGobatis() (gb interface{}) {
+func NewGobatis() *Db {
 	if nil == conf {
-		log.Fatalln("Db config no init, please invoke gobatis.ConfInit() to init db config!")
-		panic(errors.New("Db config no init, please invoke gobatis.ConfInit() to init db config!"))
+		log.Fatalln("Db config no init, please invoke Db.ConfInit() to init db config!")
+		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
 	}
 
 	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
@@ -77,8 +84,8 @@ func NewGobatis() (gb interface{}) {
 		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
 	}
 
-	gb = &gobatis{
-		GbBase{
+	gb := &Db{
+		gbBase{
 			db:     db,
 			dbType: DbType(conf.dbConf.DB.DriverName),
 			config: conf,
@@ -88,27 +95,27 @@ func NewGobatis() (gb interface{}) {
 	return gb
 }
 
-type GbBase struct {
+type gbBase struct {
 	db     dbRunner
 	dbType DbType
 	config *config
 }
 
-// gobatis
-type gobatis struct {
-	GbBase
+// Db
+type Db struct {
+	gbBase
 }
 
-// tx
-type tx struct {
-	GbBase
+// Tx
+type Tx struct {
+	gbBase
 }
 
 // Begin Tx
 //
 // ps：
-//  tx, err := this.Begin()
-func (this *GbBase) Begin() (*tx, error) {
+//  Tx, err := this.Begin()
+func (this *gbBase) Begin() (*Tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -123,8 +130,8 @@ func (this *GbBase) Begin() (*tx, error) {
 		return nil, err
 	}
 
-	t := &tx{
-		GbBase{
+	t := &Tx{
+		gbBase{
 			dbType: this.dbType,
 			config: this.config,
 			db:     db,
@@ -136,8 +143,8 @@ func (this *GbBase) Begin() (*tx, error) {
 // Begin Tx with ctx & opts
 //
 // ps：
-//  tx, err := this.BeginTx(ctx, ops)
-func (this *GbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, error) {
+//  Tx, err := this.BeginTx(ctx, ops)
+func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -152,8 +159,8 @@ func (this *GbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 		return nil, err
 	}
 
-	t := &tx{
-		GbBase{
+	t := &Tx{
+		gbBase{
 			dbType: this.dbType,
 			config: this.config,
 			db:     db,
@@ -166,7 +173,7 @@ func (this *GbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 //
 // ps：
 //  err := this.Close()
-func (this *GbBase) Close() error {
+func (this *gbBase) Close() error {
 	if nil == this.db {
 		return errors.New("db no opened")
 	}
@@ -184,33 +191,33 @@ func (this *GbBase) Close() error {
 // Commit Tx
 //
 // ps：
-//  err := tx.Commit()
-func (this *tx) Commit() error {
+//  err := Tx.Commit()
+func (this *Tx) Commit() error {
 	if nil == this.db {
-		return errors.New("tx no running")
+		return errors.New("Tx no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		return errors.New("tx no running")
+		return errors.New("Tx no running")
 
 	}
 
 	return sqlTx.Commit()
 }
 
-// Rollback tx
+// Rollback Tx
 //
 // ps：
-//  err := tx.Rollback()
-func (this *tx) Rollback() error {
+//  err := Tx.Rollback()
+func (this *Tx) Rollback() error {
 	if nil == this.db {
-		return errors.New("tx no running")
+		return errors.New("Tx no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		return errors.New("tx no running")
+		return errors.New("Tx no running")
 	}
 
 	return sqlTx.Rollback()
@@ -218,7 +225,7 @@ func (this *tx) Rollback() error {
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
 
-func (this *GbBase) Select(stmt string, param interface{}) func(res interface{}) error {
+func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return func(res interface{}) error {
@@ -239,7 +246,7 @@ func (this *GbBase) Select(stmt string, param interface{}) func(res interface{})
 }
 
 // insert(stmt string, param interface{})
-func (this *GbBase) Insert(stmt string, param interface{}) (int64, error) {
+func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
@@ -261,7 +268,7 @@ func (this *GbBase) Insert(stmt string, param interface{}) (int64, error) {
 }
 
 // update(stmt string, param interface{})
-func (this *GbBase) Update(stmt string, param interface{}) (int64, error) {
+func (this *gbBase) Update(stmt string, param interface{}) (int64, error) {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
@@ -283,6 +290,6 @@ func (this *GbBase) Update(stmt string, param interface{}) (int64, error) {
 }
 
 // delete(stmt string, param interface{})
-func (this *GbBase) Delete(stmt string, param interface{}) (int64, error) {
+func (this *gbBase) Delete(stmt string, param interface{}) (int64, error) {
 	return this.Update(stmt, param)
 }

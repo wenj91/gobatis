@@ -6,7 +6,7 @@ import (
 )
 
 type executor struct {
-	gb *GbBase
+	gb *gbBase
 }
 
 func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
