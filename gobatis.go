@@ -42,7 +42,7 @@ const (
 	dbTypePostgres DbType = "postgres"
 )
 
-func NewGobatis() *gobatis {
+func NewGobatis() (gb interface{}) {
 	if nil == conf {
 		log.Fatalln("Db config no init, please invoke gobatis.ConfInit() to init db config!")
 		panic(errors.New("Db config no init, please invoke gobatis.ConfInit() to init db config!"))
@@ -77,7 +77,7 @@ func NewGobatis() *gobatis {
 		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
 	}
 
-	gb := &gobatis{
+	gb = &gobatis{
 		GbBase{
 			db:     db,
 			dbType: DbType(conf.dbConf.DB.DriverName),
