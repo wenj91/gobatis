@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 )
 
 type ResultType string
@@ -37,14 +36,14 @@ type dbRunner interface {
 type DbType string
 
 const (
-	DbTypeMysql    DbType = "mysql"
-	DbTypePostgres DbType = "postgres"
+	dbTypeMySQL    DbType = "mysql"
+	dbTypePostgres DbType = "postgres"
 )
 
 type gbBase struct {
-	db           dbRunner
-	mapperConfig *mapperConfig
-	dbType       DbType
+	db     dbRunner
+	dbType DbType
+	config *config
 }
 
 // gobatis
@@ -62,18 +61,13 @@ type tx struct {
 // ps：
 //  tx, err := this.Begin()
 func (this *gbBase) Begin() (*tx, error) {
-	t := &tx{}
-	t.dbType = this.dbType
-
-	if this.db == nil {
-		err := fmt.Errorf("db no opened")
-		return nil, err
+	if nil == this.db {
+		return nil, errors.New("db no opened")
 	}
 
 	sqlDb, ok := this.db.(*sql.DB)
 	if !ok {
-		err := fmt.Errorf("db no opened")
-		return nil, err
+		return nil, errors.New("db no opened")
 	}
 
 	db, err := sqlDb.Begin()
@@ -81,7 +75,13 @@ func (this *gbBase) Begin() (*tx, error) {
 		return nil, err
 	}
 
-	t.db = db
+	t := &tx{
+		gbBase{
+			dbType: this.dbType,
+			config: this.config,
+			db:     db,
+		},
+	}
 	return t, nil
 }
 
@@ -90,18 +90,13 @@ func (this *gbBase) Begin() (*tx, error) {
 // ps：
 //  tx, err := this.BeginTx(ctx, ops)
 func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, error) {
-	t := &tx{}
-	t.dbType = this.dbType
-
-	if this.db == nil {
-		err := fmt.Errorf("db no opened")
-		return nil, err
+	if nil == this.db {
+		return nil, errors.New("db no opened")
 	}
 
 	sqlDb, ok := this.db.(*sql.DB)
 	if !ok {
-		err := fmt.Errorf("db no opened")
-		return nil, err
+		return nil, errors.New("db no opened")
 	}
 
 	db, err := sqlDb.BeginTx(ctx, opts)
@@ -109,7 +104,13 @@ func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 		return nil, err
 	}
 
-	t.db = db
+	t := &tx{
+		gbBase{
+			dbType: this.dbType,
+			config: this.config,
+			db:     db,
+		},
+	}
 	return t, nil
 }
 
@@ -118,15 +119,13 @@ func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 // ps：
 //  err := this.Close()
 func (this *gbBase) Close() error {
-	if this.db == nil {
-		err := fmt.Errorf("db no opened")
-		return err
+	if nil == this.db {
+		return errors.New("db no opened")
 	}
 
 	sqlDb, ok := this.db.(*sql.DB)
 	if !ok {
-		err := fmt.Errorf("db no opened")
-		return err
+		return errors.New("db no opened")
 	}
 
 	err := sqlDb.Close()
@@ -139,15 +138,13 @@ func (this *gbBase) Close() error {
 // ps：
 //  err := tx.Commit()
 func (this *tx) Commit() error {
-	if this.db == nil {
-		err := fmt.Errorf("tx no runing")
-		return err
+	if nil == this.db {
+		return errors.New("tx no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		err := fmt.Errorf("tx no runing")
-		return err
+		return errors.New("tx no running")
 
 	}
 
@@ -159,15 +156,13 @@ func (this *tx) Commit() error {
 // ps：
 //  err := tx.Rollback()
 func (this *tx) Rollback() error {
-	if this.db == nil {
-		err := fmt.Errorf("tx no runing")
-		return err
+	if nil == this.db {
+		return errors.New("tx no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		err := fmt.Errorf("tx no runing")
-		return err
+		return errors.New("tx no running")
 	}
 
 	return sqlTx.Rollback()
@@ -176,7 +171,7 @@ func (this *tx) Rollback() error {
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
 
 func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
-	ms := this.mapperConfig.getMappedStmt(stmt)
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return func(res interface{}) error {
 			return errors.New("Mapped statement not found:" + stmt)
@@ -197,7 +192,7 @@ func (this *gbBase) Select(stmt string, param interface{}) func(res interface{})
 
 // insert(stmt string, param interface{})
 func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
-	ms := this.mapperConfig.getMappedStmt(stmt)
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
 	}
@@ -218,8 +213,8 @@ func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
 }
 
 // update(stmt string, param interface{})
-func (this *gbBase) Update(stmt string, param interface{}) (int64, error)  {
-	ms := this.mapperConfig.getMappedStmt(stmt)
+func (this *gbBase) Update(stmt string, param interface{}) (int64, error) {
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
 	}
@@ -238,9 +233,8 @@ func (this *gbBase) Update(stmt string, param interface{}) (int64, error)  {
 
 	return affected, nil
 }
+
 // delete(stmt string, param interface{})
-func (this *gbBase) Delete(stmt string, param interface{}) (int64, error)  {
+func (this *gbBase) Delete(stmt string, param interface{}) (int64, error) {
 	return this.Update(stmt, param)
 }
-
-
