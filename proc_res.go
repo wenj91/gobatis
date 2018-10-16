@@ -76,9 +76,9 @@ func resStructsProc(rows *sql.Rows, res interface{}) error {
 
 	for i := 0; i < len(arr); i++ {
 		if isPtr {
-			slicePtr.Set(reflect.Append(slicePtr, reflect.ValueOf(arr[i]).Addr()))
-		} else {
 			slicePtr.Set(reflect.Append(slicePtr, reflect.ValueOf(arr[i])))
+		} else {
+			slicePtr.Set(reflect.Append(slicePtr, reflect.Indirect(reflect.ValueOf(arr[i]))))
 		}
 	}
 
@@ -333,7 +333,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 		}
 
 		if objPtr.CanInterface() {
-			res = append(res, objPtr.Interface())
+			res = append(res, objPtr.Addr().Interface())
 		}
 	}
 
