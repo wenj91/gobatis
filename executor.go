@@ -2,7 +2,7 @@ package gobatis
 
 import (
 	"errors"
-	"fmt"
+	"log"
 )
 
 type executor struct {
@@ -11,8 +11,6 @@ type executor struct {
 
 func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
 	boundSql := ms.sqlSource.getBoundSql(params)
-	fmt.Println("SQL:", boundSql.sqlStr)
-	fmt.Println("ParamMappings:", boundSql.paramMappings)
 
 	paramArr := make([]interface{}, 0)
 	for i := 0; i < len(boundSql.paramMappings); i++ {
@@ -24,8 +22,12 @@ func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 
 		paramArr = append(paramArr, param)
 	}
-
-	fmt.Println("Params:", paramArr)
+	
+	if conf.dbConf.DB.ShowSql {
+		log.Println("SQL:", boundSql.sqlStr)
+		log.Println("ParamMappings:", boundSql.paramMappings)
+		log.Println("Params:", paramArr)
+	}
 
 	stmt, err := this.gb.db.Prepare(boundSql.sqlStr)
 	if nil != err {
@@ -52,8 +54,6 @@ func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 
 func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res interface{}) error {
 	boundSql := ms.sqlSource.getBoundSql(params)
-	fmt.Println("SQL:", boundSql.sqlStr)
-	fmt.Println("ParamMappings:", boundSql.paramMappings)
 
 	paramArr := make([]interface{}, 0)
 	for i := 0; i < len(boundSql.paramMappings); i++ {
@@ -66,7 +66,11 @@ func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 		paramArr = append(paramArr, param)
 	}
 
-	fmt.Println("Params:", paramArr)
+	if conf.dbConf.DB.ShowSql {
+		log.Println("SQL:", boundSql.sqlStr)
+		log.Println("ParamMappings:", boundSql.paramMappings)
+		log.Println("Params:", paramArr)
+	}
 
 	rows, err := this.gb.db.Query(boundSql.sqlStr, paramArr...)
 	if nil != err {
