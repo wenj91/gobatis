@@ -2,7 +2,10 @@
 
 目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
 
-#### db数据源配置
+## db数据源配置
+### 示例
+* db配置示例
+
 db.yml
 ```yaml
 # 数据库配置
@@ -24,7 +27,7 @@ mappers:
   - mapper/userMapper.xml
 ```
 
-#### mapper配置文件
+* mapper配置文件示例
 
 mapper/userMapper.xml
 ```xml
@@ -46,7 +49,7 @@ mapper/userMapper.xml
 </mapper>
 ```
 
-#### 使用方法
+## 使用方法
 example.go
 ```go
 package main
