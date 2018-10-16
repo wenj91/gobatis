@@ -32,15 +32,15 @@ mappers:
 mapper/userMapper.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
-<mapper namespace="Mapper">
+<mapper namespace="userMapper">
     <select id="findMapById" resultType="Map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
     <select id="findStructByStruct" resultType="Struct">
-        SELECT id Id, name Name, create_time CrtTm FROM user where id=#{Id} order by id
+        SELECT id, name, crtTm FROM user where id=#{Id} order by id
     </select>
     <insert id="insertStruct">
-        insert into user (name, email, create_time)
+        insert into user (name, email, crtTm)
         values (#{Name}, #{Email}, #{CrtTm})
     </insert>
     <delete id="deleteById">
@@ -73,7 +73,7 @@ func main(){
     
     // 传入id查询Map
     mapRes := make(map[string]interface{})
-    err := gb.Select("Mapper.findMapById", 1)(mapRes)
+    err := gb.Select("userMapper.findMapById", 1)(mapRes)
     fmt.Println("Mapper.findMapById-->", mapRes, err)
     	
     // 根据传入实体查询对象
@@ -81,7 +81,7 @@ func main(){
         Id: gobatis.NullInt64{3, true},
     }
     structRes2 := User{}
-    err = gb.Select("Mapper.findStructByStruct", param)(&structRes2)
+    err = gb.Select("userMapper.findStructByStruct", param)(&structRes2)
     fmt.Println("Mapper.findStructByStruct-->", structRes2, err)
     
     // tx begin
