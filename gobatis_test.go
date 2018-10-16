@@ -53,8 +53,8 @@ func TestGoBatis(t *testing.T) {
 
 	gb := &gobatis{
 		gbBase{
-			db:           db,
-			mapperConfig: conf.mapperConf,
+			db:     db,
+			config: conf,
 		},
 	}
 
@@ -67,7 +67,7 @@ func TestGoBatis(t *testing.T) {
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result TUser
-	err = gb.Select("Mapper.findById", map[string]interface{}{
+	err = gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
@@ -81,22 +81,22 @@ func TestGoBatis(t *testing.T) {
 		},
 	}
 
-	id, err := gb.Insert("Mapper.saveUser", u)
+	id, err := gb.Insert("userMapper.saveUser", u)
 	fmt.Println("id:", id, "err:", err)
 
 	uu := &TUser{
-		Id:3,
+		Id:   3,
 		Name: "wenj1993",
 		Password: NullString{
 			String: "654321",
 			Valid:  true,
 		},
 	}
-	affected, err := gb.Update("Mapper.updateByStruct", uu)
+	affected, err := gb.Update("userMapper.updateByStruct", uu)
 	fmt.Println("affected:", affected, "err:", err)
 
-	affected, err = gb.Delete("Mapper.deleteById", map[string]interface{}{
-		"id":3,
+	affected, err = gb.Delete("userMapper.deleteById", map[string]interface{}{
+		"id": 3,
 	})
 	fmt.Println("delete affected:", affected, "err:", err)
 }
