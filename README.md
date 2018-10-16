@@ -71,17 +71,26 @@ func main(){
     gobatis.ConfInit("db.yml")
     gb := gobatis.NewGobatis()
     
-    //传入id查询Map
+    // 传入id查询Map
     mapRes := make(map[string]interface{})
     err := gb.Select("Mapper.findMapById", 1)(mapRes)
     fmt.Println("Mapper.findMapById-->", mapRes, err)
     	
-    //根据传入实体查询对象
+    // 根据传入实体查询对象
     param := User{
         Id: gobatis.NullInt64{3, true},
     }
     structRes2 := User{}
     err = gb.Select("Mapper.findStructByStruct", param)(&structRes2)
     fmt.Println("Mapper.findStructByStruct-->", structRes2, err)
+    
+    // tx begin
+    tx, _ := gb.Begin()
+    tx.Select("userMapper.findMapById", map[string]interface{}{
+	"id":1,
+    })(mapRes)
+    fmt.Println("tx userMapper.findMapById-->", mapRes, err)
+    tx.Commit()
+    // tx commit
 }
 ```
