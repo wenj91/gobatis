@@ -1,12 +1,10 @@
 package gobatis
 
 import (
-	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
 	"log"
 	"testing"
-	"time"
 )
 
 type TUser struct {
@@ -22,41 +20,7 @@ func TestGoBatis(t *testing.T) {
 		return
 	}
 
-	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
-	if nil != err {
-		log.Println(err)
-		panic(err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Println(err)
-		panic(err)
-	}
-
-	if conf.dbConf.DB.MaxLifeTime == 0 {
-		db.SetConnMaxLifetime(120 * time.Second)
-	} else {
-		db.SetConnMaxLifetime(time.Duration(conf.dbConf.DB.MaxLifeTime) * time.Second)
-	}
-
-	if conf.dbConf.DB.MaxOpenConns == 0 {
-		db.SetMaxOpenConns(10)
-	} else {
-		db.SetMaxOpenConns(conf.dbConf.DB.MaxOpenConns)
-	}
-
-	if conf.dbConf.DB.MaxOpenConns == 0 {
-		db.SetMaxIdleConns(5)
-	} else {
-		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
-	}
-
-	gb := &gobatis{
-		gbBase{
-			db:     db,
-			config: conf,
-		},
-	}
+	gb := NewGobatis()
 
 	res, _ := gb.db.Query("select 1")
 	cols, _ := res.Columns()
@@ -67,7 +31,7 @@ func TestGoBatis(t *testing.T) {
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result TUser
-	err = gb.Select("userMapper.findById", map[string]interface{}{
+	err := gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
