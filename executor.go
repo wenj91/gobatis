@@ -10,19 +10,11 @@ type executor struct {
 }
 
 func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
-	boundSql := ms.sqlSource.getBoundSql(params)
-
-	paramArr := make([]interface{}, 0)
-	for i := 0; i < len(boundSql.paramMappings); i++ {
-		paramName := boundSql.paramMappings[i]
-		param, ok := boundSql.extParams[paramName]
-		if !ok {
-			return 0, 0, errors.New("param:" + paramName + " not exists")
-		}
-
-		paramArr = append(paramArr, param)
+	boundSql, paramArr, err := paramProc(ms, params)
+	if nil != err {
+		return 0, 0, err
 	}
-	
+
 	if conf.dbConf.DB.ShowSql {
 		log.Println("SQL:", boundSql.sqlStr)
 		log.Println("ParamMappings:", boundSql.paramMappings)
@@ -53,17 +45,9 @@ func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 
 
 func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res interface{}) error {
-	boundSql := ms.sqlSource.getBoundSql(params)
-
-	paramArr := make([]interface{}, 0)
-	for i := 0; i < len(boundSql.paramMappings); i++ {
-		paramName := boundSql.paramMappings[i]
-		param, ok := boundSql.extParams[paramName]
-		if !ok {
-			return errors.New("param:" + paramName + " not exists")
-		}
-
-		paramArr = append(paramArr, param)
+	boundSql, paramArr, err := paramProc(ms, params)
+	if nil != err {
+		return err
 	}
 
 	if conf.dbConf.DB.ShowSql {
@@ -89,5 +73,27 @@ func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 	}
 
 	return nil
+}
+
+func paramProc(ms *mappedStmt, params map[string]interface{})(boundSql *boundSql, paramArr []interface{}, err error){
+	boundSql = ms.sqlSource.getBoundSql(params)
+	if nil == boundSql {
+		err = errors.New("Get boundSql err: boundSql == nil")
+		return
+	}
+
+	paramArr = make([]interface{}, 0)
+	for i := 0; i < len(boundSql.paramMappings); i++ {
+		paramName := boundSql.paramMappings[i]
+		param, ok := boundSql.extParams[paramName]
+		if !ok {
+			err = errors.New("param:" + paramName + " not exists")
+			return
+		}
+
+		paramArr = append(paramArr, param)
+	}
+
+	return
 }
 
