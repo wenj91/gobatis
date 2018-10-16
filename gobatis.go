@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"log"
+	"time"
 )
 
 type ResultType string
@@ -39,6 +41,52 @@ const (
 	dbTypeMySQL    DbType = "mysql"
 	dbTypePostgres DbType = "postgres"
 )
+
+func NewGobatis() *gobatis {
+	if nil == conf {
+		log.Fatalln("Db config no init, please invoke gobatis.ConfInit() to init db config!")
+		panic(errors.New("Db config no init, please invoke gobatis.ConfInit() to init db config!"))
+	}
+
+	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
+	if nil != err {
+		log.Println(err)
+		panic(err)
+	}
+
+	if err := db.Ping(); err != nil {
+		log.Println(err)
+		panic(err)
+	}
+
+	if conf.dbConf.DB.MaxLifeTime == 0 {
+		db.SetConnMaxLifetime(120 * time.Second)
+	} else {
+		db.SetConnMaxLifetime(time.Duration(conf.dbConf.DB.MaxLifeTime) * time.Second)
+	}
+
+	if conf.dbConf.DB.MaxOpenConns == 0 {
+		db.SetMaxOpenConns(10)
+	} else {
+		db.SetMaxOpenConns(conf.dbConf.DB.MaxOpenConns)
+	}
+
+	if conf.dbConf.DB.MaxOpenConns == 0 {
+		db.SetMaxIdleConns(5)
+	} else {
+		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
+	}
+
+	gb := &gobatis{
+		gbBase{
+			db:     db,
+			dbType: DbType(conf.dbConf.DB.DriverName),
+			config: conf,
+		},
+	}
+
+	return gb
+}
 
 type gbBase struct {
 	db     dbRunner
