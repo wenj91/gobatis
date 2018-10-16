@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"log"
-	"time"
 )
 
 type ResultType string
@@ -55,33 +54,9 @@ func NewGobatis() *Db {
 		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
 	}
 
-	db, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
-	if nil != err {
-		log.Println(err)
-		panic(err)
-	}
-
-	if err := db.Ping(); err != nil {
-		log.Println(err)
-		panic(err)
-	}
-
-	if conf.dbConf.DB.MaxLifeTime == 0 {
-		db.SetConnMaxLifetime(120 * time.Second)
-	} else {
-		db.SetConnMaxLifetime(time.Duration(conf.dbConf.DB.MaxLifeTime) * time.Second)
-	}
-
-	if conf.dbConf.DB.MaxOpenConns == 0 {
-		db.SetMaxOpenConns(10)
-	} else {
-		db.SetMaxOpenConns(conf.dbConf.DB.MaxOpenConns)
-	}
-
-	if conf.dbConf.DB.MaxOpenConns == 0 {
-		db.SetMaxIdleConns(5)
-	} else {
-		db.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
+	if nil == db {
+		log.Fatalln("Db init err, db == nil!")
+		panic(errors.New("Db init err, db == nil!"))
 	}
 
 	gb := &Db{

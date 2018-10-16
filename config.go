@@ -1,9 +1,11 @@
 package gobatis
 
 import (
+	"database/sql"
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 type config struct {
@@ -12,6 +14,7 @@ type config struct {
 }
 
 var conf *config
+var db *sql.DB
 
 func ConfInit(dbConfPath string)  {
 	if nil != conf {
@@ -59,6 +62,7 @@ func ConfInit(dbConfPath string)  {
 			return
 		}
 
+		log.Println("mapper config:", item, "init...")
 		mc := buildMapperConfig(f)
 		for k, ms := range mc.mappedStmts {
 			mapperConf.put(k, ms)
@@ -69,4 +73,40 @@ func ConfInit(dbConfPath string)  {
 		dbConf:     dbConf,
 		mapperConf: mapperConf,
 	}
+
+	// init db
+	dbInit()
+}
+
+func dbInit()  {
+	dbConn, err := sql.Open(conf.dbConf.DB.DriverName, conf.dbConf.DB.DataSourceName)
+	if nil != err {
+		log.Println(err)
+		panic(err)
+	}
+
+	if err := dbConn.Ping(); err != nil {
+		log.Println(err)
+		panic(err)
+	}
+
+	if conf.dbConf.DB.MaxLifeTime == 0 {
+		dbConn.SetConnMaxLifetime(120 * time.Second)
+	} else {
+		dbConn.SetConnMaxLifetime(time.Duration(conf.dbConf.DB.MaxLifeTime) * time.Second)
+	}
+
+	if conf.dbConf.DB.MaxOpenConns == 0 {
+		dbConn.SetMaxOpenConns(10)
+	} else {
+		dbConn.SetMaxOpenConns(conf.dbConf.DB.MaxOpenConns)
+	}
+
+	if conf.dbConf.DB.MaxOpenConns == 0 {
+		dbConn.SetMaxIdleConns(5)
+	} else {
+		dbConn.SetMaxIdleConns(conf.dbConf.DB.MaxIdleConns)
+	}
+
+	db = dbConn
 }
