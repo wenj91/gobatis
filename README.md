@@ -36,6 +36,9 @@ mapper/userMapper.xml
     <select id="findMapById" resultType="Map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
+    <select id="findMapByValue" resultType="Map">
+            SELECT id, name FROM user where id=#{0} order by id
+        </select>
     <select id="findStructByStruct" resultType="Struct">
         SELECT id, name, crtTm FROM user where id=#{Id} order by id
     </select>
@@ -73,22 +76,22 @@ func main(){
     
     // 传入id查询Map
     mapRes := make(map[string]interface{})
-    err := gb.Select("userMapper.findMapById", 1)(mapRes)
-    fmt.Println("Mapper.findMapById-->", mapRes, err)
+    err := gb.Select("userMapper.findMapById", map[string]interface{}{"id":1})(mapRes)
+    fmt.Println("userMapper.findMapById-->", mapRes, err)
+    
+    // 传入数组查询Map
+    err = gb.Select("userMapper.findMapByValue", []interface{}{1})(mapRes)
+    fmt.Println("userMapper.findMapByValue-->", mapRes, err)
     	
     // 根据传入实体查询对象
-    param := User{
-        Id: gobatis.NullInt64{3, true},
-    }
-    structRes2 := User{}
-    err = gb.Select("userMapper.findStructByStruct", param)(&structRes2)
-    fmt.Println("Mapper.findStructByStruct-->", structRes2, err)
+    param := User{Id: gobatis.NullInt64{Int64:3, Valid:true}}
+    var structRes User
+    err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
+    fmt.Println("userMapper.findStructByStruct-->", structRes, err)
     
     // tx begin
     tx, _ := gb.Begin()
-    tx.Select("userMapper.findMapById", map[string]interface{}{
-	"id":1,
-    })(mapRes)
+    tx.Select("userMapper.findMapById", map[string]interface{}{"id":1,})(mapRes)
     fmt.Println("tx userMapper.findMapById-->", mapRes, err)
     tx.Commit()
     // tx commit
