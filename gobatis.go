@@ -78,7 +78,7 @@ func NewGobatis() *gobatis {
 	}
 
 	gb := &gobatis{
-		gbBase{
+		GbBase{
 			db:     db,
 			dbType: DbType(conf.dbConf.DB.DriverName),
 			config: conf,
@@ -88,7 +88,7 @@ func NewGobatis() *gobatis {
 	return gb
 }
 
-type gbBase struct {
+type GbBase struct {
 	db     dbRunner
 	dbType DbType
 	config *config
@@ -96,19 +96,19 @@ type gbBase struct {
 
 // gobatis
 type gobatis struct {
-	gbBase
+	GbBase
 }
 
 // tx
 type tx struct {
-	gbBase
+	GbBase
 }
 
 // Begin Tx
 //
 // ps：
 //  tx, err := this.Begin()
-func (this *gbBase) Begin() (*tx, error) {
+func (this *GbBase) Begin() (*tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -124,7 +124,7 @@ func (this *gbBase) Begin() (*tx, error) {
 	}
 
 	t := &tx{
-		gbBase{
+		GbBase{
 			dbType: this.dbType,
 			config: this.config,
 			db:     db,
@@ -137,7 +137,7 @@ func (this *gbBase) Begin() (*tx, error) {
 //
 // ps：
 //  tx, err := this.BeginTx(ctx, ops)
-func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, error) {
+func (this *GbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -153,7 +153,7 @@ func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 	}
 
 	t := &tx{
-		gbBase{
+		GbBase{
 			dbType: this.dbType,
 			config: this.config,
 			db:     db,
@@ -166,7 +166,7 @@ func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*tx, erro
 //
 // ps：
 //  err := this.Close()
-func (this *gbBase) Close() error {
+func (this *GbBase) Close() error {
 	if nil == this.db {
 		return errors.New("db no opened")
 	}
@@ -218,7 +218,7 @@ func (this *tx) Rollback() error {
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
 
-func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
+func (this *GbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return func(res interface{}) error {
@@ -239,7 +239,7 @@ func (this *gbBase) Select(stmt string, param interface{}) func(res interface{})
 }
 
 // insert(stmt string, param interface{})
-func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
+func (this *GbBase) Insert(stmt string, param interface{}) (int64, error) {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
@@ -261,7 +261,7 @@ func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
 }
 
 // update(stmt string, param interface{})
-func (this *gbBase) Update(stmt string, param interface{}) (int64, error) {
+func (this *GbBase) Update(stmt string, param interface{}) (int64, error) {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
@@ -283,6 +283,6 @@ func (this *gbBase) Update(stmt string, param interface{}) (int64, error) {
 }
 
 // delete(stmt string, param interface{})
-func (this *gbBase) Delete(stmt string, param interface{}) (int64, error) {
+func (this *GbBase) Delete(stmt string, param interface{}) (int64, error) {
 	return this.Update(stmt, param)
 }
