@@ -1,9 +1,16 @@
 db:
-  driverName: mysql
-  dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
-  maxLifeTime: 120
-  maxOpenConns: 10
-  maxIdleConns: 5
-  showSql: true
+  datasource1:
+    driverName: mysql
+    dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
+    maxLifeTime: 120
+    maxOpenConns: 10
+    maxIdleConns: 5
+  datasource2:
+    driverName: mysql
+    dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
+    maxLifeTime: 120
+    maxOpenConns: 10
+    maxIdleConns: 5
+showSql: true
 mappers:
-  - userMapper.xml
+  - mapper/userMapper.xml
