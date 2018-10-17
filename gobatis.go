@@ -48,7 +48,7 @@ const (
 	dbTypePostgres DbType = "postgres"
 )
 
-func NewGobatis() *Db {
+func NewGoBatis(datasource string) *Db {
 	if nil == conf {
 		log.Fatalln("Db config no init, please invoke Db.ConfInit() to init db config!")
 		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
@@ -59,10 +59,16 @@ func NewGobatis() *Db {
 		panic(errors.New("Db init err, db == nil!"))
 	}
 
+	ds, ok := db[datasource]
+	if !ok {
+		log.Fatalln("Datasource:", datasource, "not exists!")
+		panic(errors.New("Datasource:" + datasource + "not exists!"))
+	}
+
 	gb := &Db{
 		gbBase{
-			db:     db,
-			dbType: DbType(conf.dbConf.DB.DriverName),
+			db:     ds,
+			dbType: DbType(conf.dbConf.DB[datasource].DriverName),
 			config: conf,
 		},
 	}
@@ -90,7 +96,7 @@ type Tx struct {
 //
 // ps：
 //  Tx, err := this.Begin()
-func (this *gbBase) Begin() (*Tx, error) {
+func (this *Db) Begin() (*Tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -119,7 +125,7 @@ func (this *gbBase) Begin() (*Tx, error) {
 //
 // ps：
 //  Tx, err := this.BeginTx(ctx, ops)
-func (this *gbBase) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
+func (this *Db) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
