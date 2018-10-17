@@ -20,7 +20,7 @@ func TestGoBatis(t *testing.T) {
 		return
 	}
 
-	gb := NewGobatis()
+	gb := NewGoBatis("datasource1")
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)
