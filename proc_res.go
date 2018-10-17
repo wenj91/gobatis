@@ -40,7 +40,7 @@ func resStructProc(rows *sql.Rows, res interface{}) error {
 	}
 
 	if len(arr) > 0 {
-		resVal.Set(reflect.ValueOf(arr[0]))
+		resVal.Set(reflect.ValueOf(arr[0]).Elem())
 	}
 
 	return nil
