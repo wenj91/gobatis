@@ -11,12 +11,21 @@ type resultTypeProc = func(rows *sql.Rows, res interface{}) error
 
 var resSetProcMap = map[ResultType]resultTypeProc{
 	resultTypeMap:     resMapProc,
+	resultTypeMapL:     resMapProc,
 	resultTypeMaps:    resMapsProc,
+	resultTypeMapsL:    resMapsProc,
 	resultTypeSlice:   resSliceProc,
+	resultTypeSliceL:   resSliceProc,
+	resultTypeArray:   resSliceProc,
 	resultTypeSlices:  resSlicesProc,
+	resultTypeSlicesL:  resSlicesProc,
+	resultTypeArrays:  resSlicesProc,
 	resultTypeValue:   resValueProc,
+	resultTypeValueL:   resValueProc,
 	resultTypeStructs: resStructsProc,
+	resultTypeStructsL: resStructsProc,
 	resultTypeStruct:  resStructProc,
+	resultTypeStructL:  resStructProc,
 }
 
 func resStructProc(rows *sql.Rows, res interface{}) error {
