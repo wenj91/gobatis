@@ -122,7 +122,7 @@ func (this *fileLogger) Close() {
 	this.isClose = true
 }
 
-var DefLog = &logger{logLevel: defaultLogLevel, out: &stdLogger{}, callStepDepth: 1}
+var defLog = &logger{logLevel: defaultLogLevel, out: &stdLogger{}, callStepDepth: 1}
 
 func NewFileLog(fileName string, level LogLevel) ILogger {
 	logger := &logger{
@@ -217,25 +217,25 @@ func (this *logger) Fatal(format string, v ...interface{}) {
 }
 
 func SetLevel(lv LogLevel)  {
-	DefLog.SetLevel(lv)
+	defLog.SetLevel(lv)
 }
 
 func Info(format string, v ...interface{}) {
-	DefLog.Info(format, v...)
+	defLog.Info(format, v...)
 }
 
 func Debug(format string, v ...interface{}) {
-	DefLog.Debug(format, v...)
+	defLog.Debug(format, v...)
 }
 
 func Warn(format string, v ...interface{}) {
-	DefLog.Warn(format, v...)
+	defLog.Warn(format, v...)
 }
 
 func Error(format string, v ...interface{}) {
-	DefLog.Error(format, v...)
+	defLog.Error(format, v...)
 }
 
 func Fatal(format string, v ...interface{}) {
-	DefLog.Fatal(format, v...)
+	defLog.Fatal(format, v...)
 }
