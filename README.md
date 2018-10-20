@@ -3,32 +3,43 @@
 目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
 
 ## db数据源配置
-### 示例
-* db配置示例
+- 支持多数据源配置
+- db子级配置为一个map，map的key即为数据源名称标识  
+- map的value为数据源具体配置，具体配置项如下表
 
-db.yml
+| 配置 | 是否必填配置 | 默认值 | 说明 |
+|:---|:----:|:----:|----|
+| driverName | 是 | | 数据源驱动名，必填配置项
+| dataSourceName | 是 | | 数据源名称，必填配置项，例如: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
+| maxLifeTime | 否 | 120(单位: s)| 连接最大存活时间，默认值为: 120 单位为: s
+| maxOpenConns | 否 | 10 | 最大打开连接数，默认值为: 10
+| maxIdleConns | 否 | 5 | 最大挂起连接数，默认值为: 5
+
+### 示例
+* db配置示例  
+以下为多数据源配置示例: db.yml
 ```yaml
 # 数据库配置
 db:
-  # 数据源名称
+  # 数据源名称1
   datasource1:
     # 驱动名
     driverName: mysql
     # 数据源
     dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
-    # 连接最大存活时间（单位：s）
+    # 连接最大存活时间（单位: s）
     maxLifeTime: 120
     # 最大open连接数
     maxOpenConns: 10
     # 最大挂起连接数
     maxIdleConns: 5
-  # 数据源名称
+  # 数据源名称2
   datasource2:
     # 驱动名
     driverName: mysql
     # 数据源
     dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
-    # 连接最大存活时间（单位：s）
+    # 连接最大存活时间（单位: s）
     maxLifeTime: 120
     # 最大open连接数
     maxOpenConns: 10
@@ -38,22 +49,42 @@ db:
 showSql: true
 # 数据表映射文件路径配置
 mappers:
+  # 映射文件路径， 可以为绝对路径，如: /usr/local/mapper/userMapper.xml
   - mapper/userMapper.xml
 ```
 
-* mapper配置文件示例
+* mapper配置  
+1. mapper可以配置namespace属性  
+1. mapper可以包含: select, insert, update, delete标签  
+1. mapper子标签id属性则为标签唯一标识, 必须配置属性
+1. 其中select标签必须包含resultType属性，resultType可以是: map, maps, array, arrays, struct, structs, value
+  
+* 标签说明  
+select: 用于查询操作   
+insert: 用于插入sql操作  
+update: 用于更新sql操作  
+delete: 用于删除sql操作
 
-mapper/userMapper.xml
+* resultType说明  
+map: 则数据库查询结果为map  
+maps: 则数据库查询结果为map数组  
+array: 则数据库查询结果为值数组  
+arrays: 则数据库查询结果为多个值数组  
+struct: 则数据库查询结果为单个结构体  
+structs: 则数据库查询结果为结构体数组  
+value: 则数据库查询结果为单个数值  
+ 
+以下是mapper配置示例: mapper/userMapper.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <mapper namespace="userMapper">
-    <select id="findMapById" resultType="Map">
+    <select id="findMapById" resultType="map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
-    <select id="findMapByValue" resultType="Map">
+    <select id="findMapByValue" resultType="map">
             SELECT id, name FROM user where id=#{0} order by id
         </select>
-    <select id="findStructByStruct" resultType="Struct">
+    <select id="findStructByStruct" resultType="struct">
         SELECT id, name, crtTm FROM user where id=#{Id} order by id
     </select>
     <insert id="insertStruct">
@@ -73,10 +104,11 @@ package main
 
 import (
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
-	"github.com/wenj91/gobatis"
+	_ "github.com/go-sql-driver/mysql" // 引入驱动
+	"github.com/wenj91/gobatis"  // 引入gobatis
 )
 
+// 实体结构示例， tag：field为数据库对应字段名称
 type User struct {
 	Id    gobatis.NullInt64  `field:"id"`
 	Name  gobatis.NullString `field:"name"`
@@ -85,17 +117,22 @@ type User struct {
 }
 
 func main() {
+	// 初始化db，参数为db.yml路径，如：db.yml
 	gobatis.ConfInit("db.yml")
+	
+	// 获取数据源，参数为数据源名称，如：datasource1
 	gb := gobatis.NewGoBatis("datasource1")
 
 	//传入id查询Map
 	mapRes := make(map[string]interface{})
+	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
+	// 查询参数可以是map，也可以是数组，也可以是实体结构
 	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 
 	//根据传入实体查询对象
 	param := User{Id: gobatis.NullInt64{Int64: 1, Valid: true}}
-	structRes2 := User{}
+	var structRes2 User
 	err = gb.Select("userMapper.findStructByStruct", param)(&structRes2)
 	fmt.Println("userMapper.findStructByStruct-->", structRes2, err)
 
