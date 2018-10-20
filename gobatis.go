@@ -28,7 +28,7 @@ const (
 	resultTypeArray ResultType = "array"
 	// result set is a value slice, item is value slice, []interface{}
 	resultTypeSlices ResultType = "Slices"
-	resultTypeSlicesL ResultType = "Slices"
+	resultTypeSlicesL ResultType = "slices"
 	resultTypeArrays ResultType = "arrays"
 	// result set is single value
 	resultTypeValue ResultType = "Value"
