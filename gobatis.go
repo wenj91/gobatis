@@ -11,27 +11,27 @@ type ResultType string
 
 const (
 	// result set is a map: map[string]interface{}
-	resultTypeMap ResultType = "Map"
+	resultTypeMap  ResultType = "Map"
 	resultTypeMapL ResultType = "map"
 	// result set is a slice, item is map: []map[string]interface{}
-	resultTypeMaps ResultType = "Maps"
+	resultTypeMaps  ResultType = "Maps"
 	resultTypeMapsL ResultType = "maps"
 	// result set is a struct
-	resultTypeStruct ResultType = "Struct"
+	resultTypeStruct  ResultType = "Struct"
 	resultTypeStructL ResultType = "struct"
 	// result set is a slice, item is struct
-	resultTypeStructs ResultType = "Structs"
+	resultTypeStructs  ResultType = "Structs"
 	resultTypeStructsL ResultType = "structs"
 	// result set is a value slice, []interface{}
-	resultTypeSlice ResultType = "Slice"
+	resultTypeSlice  ResultType = "Slice"
 	resultTypeSliceL ResultType = "slice"
-	resultTypeArray ResultType = "array"
+	resultTypeArray  ResultType = "array"
 	// result set is a value slice, item is value slice, []interface{}
-	resultTypeSlices ResultType = "Slices"
+	resultTypeSlices  ResultType = "Slices"
 	resultTypeSlicesL ResultType = "slices"
-	resultTypeArrays ResultType = "arrays"
+	resultTypeArrays  ResultType = "arrays"
 	// result set is single value
-	resultTypeValue ResultType = "Value"
+	resultTypeValue  ResultType = "Value"
 	resultTypeValueL ResultType = "value"
 )
 
