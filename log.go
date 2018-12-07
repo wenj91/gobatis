@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// 测试日志类, 性能低下, 不建议使用
 func now() string {
 	date := time.Now().Format("2006-01-02 15:04:06")
 	return date
@@ -44,12 +45,12 @@ type LogLevel int
 
 // ALL < DEBUG < INFO < WARN < ERROR < FATAL < OFF
 const (
-	LOG_LEVEL_DEBUG LogLevel = iota
-	LOG_LEVEL_INFO
-	LOG_LEVEL_WARN
-	LOG_LEVEL_ERROR
-	LOG_LEVEL_FATAL
-	LOG_LEVEL_OFF
+	LogLevelDebug LogLevel = iota
+	LogLevelInfo
+	LogLevelWarn
+	LogLevelError
+	LogLevelFatal
+	LogLevelOff
 )
 
 type OutType int
@@ -72,7 +73,7 @@ type logger struct {
 	callStepDepth int
 }
 
-var defaultLogLevel = LOG_LEVEL_DEBUG
+var defaultLogLevel = LogLevelDebug
 
 type stdLogger struct{ mu sync.Mutex }
 
@@ -141,7 +142,6 @@ func NewFileLog(fileName string, level LogLevel) ILogger {
 	return nil
 }
 
-
 func (this *logger) getPrefix(flag string) string {
 	prefix := fmt.Sprintf("%s [%5s] - ", now(), flag)
 	callers := getCallers()
@@ -152,7 +152,7 @@ func (this *logger) getPrefix(flag string) string {
 	return prefix
 }
 
-func (this *logger) SetCallStepDepth(stepDepth int)  {
+func (this *logger) SetCallStepDepth(stepDepth int) {
 	this.mu.Lock()
 	defer this.mu.Unlock()
 
@@ -181,7 +181,7 @@ func (this *logger) SetLevel(level LogLevel) {
 }
 
 func (this *logger) Info(format string, v ...interface{}) {
-	if this.logLevel <= LOG_LEVEL_INFO {
+	if this.logLevel <= LogLevelInfo {
 		logStr := fmt.Sprintf(this.getPrefix("INFO")+format, v...)
 
 		this.out.println(logStr)
@@ -189,34 +189,34 @@ func (this *logger) Info(format string, v ...interface{}) {
 }
 
 func (this *logger) Debug(format string, v ...interface{}) {
-	if this.logLevel <= LOG_LEVEL_DEBUG {
+	if this.logLevel <= LogLevelDebug {
 		logStr := fmt.Sprintf(this.getPrefix("DEBUG")+format, v...)
 		this.out.println(logStr)
 	}
 }
 
 func (this *logger) Warn(format string, v ...interface{}) {
-	if this.logLevel <= LOG_LEVEL_WARN {
+	if this.logLevel <= LogLevelWarn {
 		logStr := fmt.Sprintf(this.getPrefix("WARN")+format, v...)
 		this.out.println(logStr)
 	}
 }
 
 func (this *logger) Error(format string, v ...interface{}) {
-	if this.logLevel <= LOG_LEVEL_ERROR {
+	if this.logLevel <= LogLevelError {
 		logStr := fmt.Sprintf(this.getPrefix("ERROR")+format, v...)
 		this.out.println(logStr)
 	}
 }
 
 func (this *logger) Fatal(format string, v ...interface{}) {
-	if this.logLevel <= LOG_LEVEL_FATAL {
+	if this.logLevel <= LogLevelFatal {
 		logStr := fmt.Sprintf(this.getPrefix("FATAL")+format, v...)
 		this.out.println(logStr)
 	}
 }
 
-func SetLevel(lv LogLevel)  {
+func SetLevel(lv LogLevel) {
 	defLog.SetLevel(lv)
 }
 

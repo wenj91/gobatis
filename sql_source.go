@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// gobatis的核心, 从配置到sql, 参数映射......
 type boundSql struct {
 	sqlStr        string
 	paramMappings []string
@@ -48,6 +49,7 @@ func (this *staticSqlSource) getBoundSql(params map[string]interface{}) *boundSq
 	}
 }
 
+// 静态token处理, 将#{xx}预处理为数据库预编译语句
 func (this *staticSqlSource) tokenHandler(params map[string]interface{}) {
 	sqlStr := this.sqlStr
 

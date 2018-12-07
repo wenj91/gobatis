@@ -13,10 +13,11 @@ type dynamicContext struct {
 	params map[string]interface{}
 }
 
-func (this *dynamicContext) appendSql(sqlStr string)  {
+func (this *dynamicContext) appendSql(sqlStr string) {
 	this.sqlStr += sqlStr + " "
 }
 
+// [ref](http://www.mybatis.org/mybatis-3/dynamic-sql.html)
 type iSqlNode interface {
 	build(ctx *dynamicContext) bool
 }
@@ -49,7 +50,6 @@ func (this *ifSqlNode) build(ctx *dynamicContext) bool {
 
 	return false
 }
-
 
 // text node
 type textSqlNode struct {
@@ -192,8 +192,8 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 		}
 	}
 
-	if start != 0{
-		log.Println("WARN: token not close")
+	if start != 0 {
+		log.Println("WARN: token not close, SqlStr:" + ctx.sqlStr + " At:" + fmt.Sprintf("%d", start))
 	}
 
 	finalSqlStr += sqlStr
@@ -208,11 +208,11 @@ func (this *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
 
 	res := make(map[string]interface{})
 	objType := objVal.Type()
-	for i:=0; i<objVal.NumField(); i++{
+	for i := 0; i < objVal.NumField(); i++ {
 		fieldVal := objVal.Field(i)
 		if fieldVal.CanInterface() {
 			field := objType.Field(i)
-			res[field.Name]=fieldVal.Interface()
+			res[field.Name] = fieldVal.Interface()
 		}
 	}
 
@@ -220,9 +220,33 @@ func (this *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
 }
 
 // set node
+type setSqlNode struct {
+	sqlNodes []iSqlNode
+}
+
+func (this *setSqlNode) build(ctx *dynamicContext) bool {
+	panic("implement me")
+}
 
 // trim node
+type trimNode struct {
+	prefix          string
+	prefixOverrides string
+	suffixOverrides string
+	sqlNodes        []iSqlNode
+}
+
+func (this *trimNode) build(ctx *dynamicContext) bool {
+	panic("implement me")
+}
 
 // where node
+type whereNode struct {
+	sqlNodes []iSqlNode
+}
+
+func (this *whereNode) build(ctx *dynamicContext) bool {
+	panic("implement me")
+}
 
 // choose node
