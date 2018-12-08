@@ -27,22 +27,49 @@ func resStructProc(rows *sql.Rows, res interface{}) error {
 		return errors.New("Struct query result must be ptr")
 	}
 
-	resVal = resVal.Elem()
-	if resVal.Kind() != reflect.Struct {
-		return errors.New("Struct query result must be struct")
+	if resVal.Elem().Kind() != reflect.Ptr ||
+		!resVal.Elem().IsValid() ||
+		resVal.Elem().Elem().Kind() != reflect.Invalid {
+		tips := `
+var res *XXX
+queryParams := make(map[string]interface{})
+queryParams["id"] = id
+gb.Select("selectXXXById", queryParams)(&res)
+
+Tips: "(&res)" --> don't forget "&"
+`
+		return errors.New("Struct query result must be a struct ptr, " +
+			"and params res is the address of ptr, e.g. " + tips)
 	}
 
-	arr, err := rowsToStructs(rows, resVal.Type())
+	finalVal := reflect.New(resVal.Elem().Type().Elem())
+	finalStructPtr := finalVal.Interface()
+	arr, err := rowsToStructs(rows, reflect.TypeOf(finalStructPtr).Elem())
 	if nil != err {
 		return err
 	}
 
+	// fixme: 查询结果是返回错误呢, 觉得如果返回错误就会造成错误的困惑,
+	//  因为这里的错误定义是用于参数以及异常校验,
+	//  如果用户结果校验, 那么如果用户单单用err来判断是否存在查询对象而忽略了其它一些类似sql语句错误, 传参错误等,
+	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
 	if len(arr) > 1 {
-		return errors.New("Struct query result more than one row")
+		//return errors.New("Struct query result more than one row")
+		log.Println("[WARN] Struct query result more than one row")
+		resVal.Elem().Set(reflect.ValueOf(arr[0]))
 	}
 
-	if len(arr) > 0 {
-		resVal.Set(reflect.ValueOf(arr[0]).Elem())
+	// fixme: 查询结果是返回错误呢, 觉得如果返回错误就会造成错误的困惑,
+	//  因为这里的错误定义是用于参数校验以及异常,
+	//  如果用户结果校验, 那么如果用户单单用err来判断是否存在查询对象而忽略了其它一些类似sql语句错误, 传参错误等,
+	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
+	if len(arr) == 0 {
+		//return errors.New("No result")
+		log.Println("[WARN] Struct query result is nil")
+	}
+
+	if len(arr) == 1 {
+		resVal.Elem().Set(reflect.ValueOf(arr[0]))
 	}
 
 	return nil
@@ -315,7 +342,10 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 			scanArgs[i] = &vals[i]
 		}
 
-		rows.Scan(scanArgs...)
+		err = rows.Scan(scanArgs...)
+		if nil != err {
+			return nil, err
+		}
 
 		obj := reflect.New(resultType).Elem()
 		objPtr := reflect.Indirect(obj)
