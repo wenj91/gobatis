@@ -37,6 +37,7 @@ func TestExpr_eval(t *testing.T) {
 		"val != nil",
 		"val != ''",
 		"val == ''",
+		"val != nil && val == ''",
 	}
 
 	for i, ex := range expression {
@@ -50,7 +51,7 @@ func assertExpr(i int, ok bool, expr string) {
 	switch i {
 	case 0, 3, 4, 6, 8, 9, 12, 14, 17: // false
 		assertNotTrue(ok, "Expr:"+expr+" Result:true")
-	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18: // true
+	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19: // true
 		assertTrue(ok, "Expr:"+expr+" Result:false")
 	}
 }
