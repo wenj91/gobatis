@@ -4,35 +4,20 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"log"
 )
 
 type ResultType string
 
 const (
-	// result set is a map: map[string]interface{}
-	resultTypeMap  ResultType = "Map"
-	resultTypeMapL ResultType = "map"
-	// result set is a slice, item is map: []map[string]interface{}
-	resultTypeMaps  ResultType = "Maps"
-	resultTypeMapsL ResultType = "maps"
-	// result set is a struct
-	resultTypeStruct  ResultType = "Struct"
-	resultTypeStructL ResultType = "struct"
-	// result set is a slice, item is struct
-	resultTypeStructs  ResultType = "Structs"
-	resultTypeStructsL ResultType = "structs"
-	// result set is a value slice, []interface{}
-	resultTypeSlice  ResultType = "Slice"
-	resultTypeSliceL ResultType = "slice"
-	resultTypeArray  ResultType = "array"
-	// result set is a value slice, item is value slice, []interface{}
-	resultTypeSlices  ResultType = "Slices"
-	resultTypeSlicesL ResultType = "slices"
-	resultTypeArrays  ResultType = "arrays"
-	// result set is single value
-	resultTypeValue  ResultType = "Value"
-	resultTypeValueL ResultType = "value"
+	resultTypeMap     ResultType = "map"     // result set is a map: map[string]interface{}
+	resultTypeMaps    ResultType = "maps"    // result set is a slice, item is map: []map[string]interface{}
+	resultTypeStruct  ResultType = "struct"  // result set is a struct
+	resultTypeStructs ResultType = "structs" // result set is a slice, item is struct
+	resultTypeSlice   ResultType = "slice"   // result set is a value slice, []interface{}
+	resultTypeSlices  ResultType = "slices"  // result set is a value slice, item is value slice, []interface{}
+	resultTypeArray   ResultType = "array"   //
+	resultTypeArrays  ResultType = "arrays"  // result set is a value slice, item is value slice, []interface{}
+	resultTypeValue   ResultType = "value"   // result set is single value
 )
 
 type GoBatis interface {
@@ -59,18 +44,15 @@ const (
 
 func NewGoBatis(datasource string) *Db {
 	if nil == conf {
-		log.Fatalln("Db config no init, please invoke Db.ConfInit() to init db config!")
 		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
 	}
 
 	if nil == db {
-		log.Fatalln("Db init err, db == nil!")
 		panic(errors.New("Db init err, db == nil!"))
 	}
 
 	ds, ok := db[datasource]
 	if !ok {
-		log.Fatalln("Datasource:", datasource, "not exists!")
 		panic(errors.New("Datasource:" + datasource + "not exists!"))
 	}
 

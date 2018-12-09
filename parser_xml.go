@@ -10,8 +10,8 @@ import (
 type ElemType string
 
 const (
-	eleTpText ElemType = "text"
-	eleTpNode ElemType = "node"
+	eleTpText ElemType = "text" // 静态文本节点
+	eleTpNode ElemType = "node" // 节点子节点
 )
 
 type node struct {

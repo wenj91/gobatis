@@ -132,7 +132,7 @@ func main() {
 
 	//根据传入实体查询对象
 	param := User{Id: gobatis.NullInt64{Int64: 1, Valid: true}}
-	var structRes2 User
+	var structRes2 *User
 	err = gb.Select("userMapper.findStructByStruct", param)(&structRes2)
 	fmt.Println("userMapper.findStructByStruct-->", structRes2, err)
 

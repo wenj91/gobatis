@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!ELEMENT mapper (select*, update*, insert*, delete*)>
+<!ATTLIST mapper namespace>
+
+<!ELEMENT select (if*, foreach*)>
+<!ATTLIST select id  ID #REQUIRED>
+<!ATTLIST select resultType(struct|structs|map|maps|array|arrays|value) #REQUIRED>
+
+<!ELEMENT update (if*, foreach*)>
+<!ATTLIST update id ID #REQUIRED>
+
+<!ELEMENT insert (if*, foreach*)>
+<!ATTLIST insert id ID #REQUIRED>
+
+<!ELEMENT delete (if*, foreach*)>
+<!ATTLIST delete id ID #REQUIRED>
+
+<!ELEMENT if ()>
+<!ATTLIST if test(#PCDATA) #REQUIRED>
+
+<!ELEMENT foreach ()>
+<!ATTLIST foreach collection(#PCDATA) #REQUIRED>
+<!ATTLIST foreach open(#PCDATA)>
+<!ATTLIST foreach close(#PCDATA)>
+<!ATTLIST foreach separator(#PCDATA)>
+<!ATTLIST foreach index(#PCDATA)>

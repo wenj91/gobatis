@@ -7,6 +7,11 @@ import (
 	"time"
 )
 
+// parameters process util
+// @params
+//    param interface{} : sql query params
+// @return
+//    map[string]interface{} : return the convert map
 func paramProcess(param interface{}) map[string]interface{} {
 	v := reflect.ValueOf(param)
 	if v.Kind() == reflect.Ptr {
@@ -29,6 +34,11 @@ func paramProcess(param interface{}) map[string]interface{} {
 	return res
 }
 
+// convert list to map
+// @params
+//    arr interface{} : list param
+// @return
+//    map[string]interface{} : return the convert map
 func listToMap(arr interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	objVal := reflect.ValueOf(arr)
@@ -45,6 +55,11 @@ func listToMap(arr interface{}) map[string]interface{} {
 	return res
 }
 
+// convert struct to map
+// @params
+//    s interface{} : struct param
+// @return
+//    map[string]interface{} : return the convert map
 func structToMap(s interface{}) map[string]interface{} {
 	objVal := reflect.ValueOf(s)
 	if objVal.Kind() == reflect.Ptr {
