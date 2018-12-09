@@ -12,6 +12,7 @@ type TestUser struct {
 func TestExpr_eval(t *testing.T) {
 	params := map[string]interface{}{
 		"name": "wenj91",
+		"val":  "",
 		"user": &TestUser{Name: "wenj91"},
 		"m":    map[string]interface{}{"user": &TestUser{Name: "wenj91"}},
 		"m1":   map[string]interface{}{"name": "wenj91"},
@@ -33,6 +34,10 @@ func TestExpr_eval(t *testing.T) {
 		"m.user.Name == 'wenj91' && 1 == 1",
 		"m.user.Name == 'wenj91' && 1 != 1",
 		"m.user.Name == 'wenj91' || 1 != 1",
+		"val != nil",
+		"val != ''",
+		"val == ''",
+		"val != nil && val == ''",
 	}
 
 	for i, ex := range expression {
@@ -42,11 +47,11 @@ func TestExpr_eval(t *testing.T) {
 	}
 }
 
-func assertExpr(i int, ok bool, expr string)  {
+func assertExpr(i int, ok bool, expr string) {
 	switch i {
-	case 0, 3, 4, 6, 8, 9, 12, 14: // false
-		assertNotTrue(ok, "Expr:" + expr + " Result:true")
-	case 1, 2, 5, 7, 10, 11, 13, 15: // true
-		assertTrue(ok, "Expr:" + expr + " Result:false")
+	case 0, 3, 4, 6, 8, 9, 12, 14, 17: // false
+		assertNotTrue(ok, "Expr:"+expr+" Result:true")
+	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19: // true
+		assertTrue(ok, "Expr:"+expr+" Result:false")
 	}
 }
