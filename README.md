@@ -77,15 +77,20 @@ value: 则数据库查询结果为单个数值
 以下是mapper配置示例: mapper/userMapper.xml
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE mapper PUBLIC "gobatis"
+        "https://raw.githubusercontent.com/wenj91/gobatis/master/gobatis.dtd">
 <mapper namespace="userMapper">
     <select id="findMapById" resultType="map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
     <select id="findMapByValue" resultType="map">
             SELECT id, name FROM user where id=#{0} order by id
-        </select>
+    </select>
     <select id="findStructByStruct" resultType="struct">
         SELECT id, name, crtTm FROM user where id=#{Id} order by id
+    </select>
+    <select id="queryStructs" resultType="structs">
+            SELECT id, name, crtTm FROM user order by id
     </select>
     <insert id="insertStruct">
         insert into user (name, email, crtTm)
@@ -130,12 +135,18 @@ func main() {
 	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 
-	//根据传入实体查询对象
+	// 根据传入实体查询对象
 	param := User{Id: gobatis.NullInt64{Int64: 1, Valid: true}}
-	var structRes2 *User
-	err = gb.Select("userMapper.findStructByStruct", param)(&structRes2)
-	fmt.Println("userMapper.findStructByStruct-->", structRes2, err)
+	var structRes *User
+	err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
+	fmt.Println("userMapper.findStructByStruct-->", structRes, err)
+	
+	// 查询实体列表
+	structsRes := make([]*User, 0)
+	err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
+	fmt.Println("userMapper.queryStructs-->", structsRes, err)
 
+	// 开启事务示例
 	tx, _ := gb.Begin()
 	tx.Select("userMapper.findMapById", map[string]interface{}{"id": 1,})(mapRes)
 	fmt.Println("tx userMapper.findMapById-->", mapRes, err)
