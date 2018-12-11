@@ -1,8 +1,11 @@
 package gobatis
 
 import (
+	"bytes"
+	"encoding/binary"
 	"fmt"
 	"reflect"
+	"strconv"
 	"time"
 )
 
@@ -46,6 +49,71 @@ func interfaceToMap(param interface{}) interface{} {
 	return nil
 }
 
+func bytesToVal(data interface{}, tp reflect.Type) interface{} {
+	str := string(data.([]uint8))
+	switch tp.Kind() {
+	case reflect.Bool:
+		if str == "1" {
+			data = true
+		}else{
+			data = false
+		}
+	case reflect.Int:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int(i)
+	case reflect.Int8:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int8(i)
+	case reflect.Int16:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int16(i)
+	case reflect.Int32:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int32(i)
+	case reflect.Int64:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int64(i)
+	case reflect.Uint:
+		i, _ := strconv.ParseInt(str, 10, 64)
+		data = int32(i)
+	case reflect.Uint8:
+		ui, _ := strconv.ParseUint(str, 0, 64)
+		data = uint8(ui)
+	case reflect.Uint16:
+		ui, _ := strconv.ParseUint(str, 0, 64)
+		data = uint16(ui)
+	case reflect.Uint32:
+		ui, _ := strconv.ParseUint(str, 0, 64)
+		data = uint32(ui)
+	case reflect.Uint64:
+		ui, _ := strconv.ParseUint(str, 0, 64)
+		data = uint64(ui)
+	case reflect.Uintptr:
+		ui, _ := strconv.ParseUint(str, 0, 64)
+		data = uintptr(ui)
+	case reflect.Float32:
+		str := string(data.([]uint8))
+		f64, _ := strconv.ParseFloat(str, 64)
+		data = float32(f64)
+	case reflect.Float64:
+		str := string(data.([]uint8))
+		f64, _ := strconv.ParseFloat(str, 64)
+		data = f64
+	case reflect.Complex64:
+		binBuf := bytes.NewBuffer(data.([]uint8))
+		var x complex64
+		_ = binary.Read(binBuf, binary.BigEndian, &x)
+		data = x
+	case reflect.Complex128:
+		binBuf := bytes.NewBuffer(data.([]uint8))
+		var x complex128
+		_ = binary.Read(binBuf, binary.BigEndian, &x)
+		data = x
+	}
+
+	return data
+}
+
 func dataToFieldVal(data interface{}, tp reflect.Type) interface{} {
 	typ := tp.Name()
 	switch {
@@ -66,6 +134,10 @@ func dataToFieldVal(data interface{}, tp reflect.Type) interface{} {
 		typ == "complex64" ||
 		typ == "complex128":
 		if nil != data {
+			if reflect.TypeOf(data).Kind() == reflect.Slice ||
+				reflect.TypeOf(data).Kind() == reflect.Array {
+				data = bytesToVal(data, tp)
+			}
 			return data
 		}
 	case typ == "string":
