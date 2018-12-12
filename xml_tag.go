@@ -201,22 +201,7 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 }
 
 func (this *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
-	objVal := reflect.ValueOf(s)
-	if objVal.Kind() == reflect.Ptr {
-		objVal = objVal.Elem()
-	}
-
-	res := make(map[string]interface{})
-	objType := objVal.Type()
-	for i := 0; i < objVal.NumField(); i++ {
-		fieldVal := objVal.Field(i)
-		if fieldVal.CanInterface() {
-			field := objType.Field(i)
-			res[field.Name] = fieldVal.Interface()
-		}
-	}
-
-	return res
+	return structToMap(s)
 }
 
 // set node

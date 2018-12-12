@@ -353,11 +353,19 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 			colName := cols[i]
 			fieldName := fieldsMapper[colName]
 			field := objPtr.FieldByName(fieldName)
-			//设置相关字段的值,并判断是否可设值
+			// 设置相关字段的值,并判断是否可设值
 			if field.CanSet() && vals[i] != nil {
-
 				//获取字段类型并设值
 				data := dataToFieldVal(vals[i], field.Type())
+
+				// 数据库返回类型与字段类型不符合的情况下通知用户
+				if reflect.TypeOf(data).Name() != field.Type().Name() {
+					warnInfo := "[WARN] fieldType != dataType, filedName:" + fieldName +
+						" fieldType:" + field.Type().Name() +
+						" dataType:" + reflect.TypeOf(data).Name()
+					log.Println(warnInfo)
+				}
+
 				if nil != data {
 					field.Set(reflect.ValueOf(data))
 				}
