@@ -332,7 +332,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 	for rows.Next() {
 		cols, err := rows.Columns()
 		if nil != err {
-			log.Fatal(err)
+			log.Println("rows.Columns() err:", err)
 			return nil, err
 		}
 
@@ -356,7 +356,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 			// 设置相关字段的值,并判断是否可设值
 			if field.CanSet() && vals[i] != nil {
 				//获取字段类型并设值
-				data := dataToFieldVal(vals[i], field.Type())
+				data := dataToFieldVal(vals[i], field.Type(), fieldName)
 
 				// 数据库返回类型与字段类型不符合的情况下通知用户
 				if reflect.TypeOf(data).Name() != field.Type().Name() {
