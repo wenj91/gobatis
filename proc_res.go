@@ -137,7 +137,8 @@ func resValueProc(rows *sql.Rows, res interface{}) error {
 	if len(tempResSlice) > 0 {
 		if nil != tempResSlice[0] {
 			value := reflect.Indirect(resPtr)
-			value.Set(reflect.ValueOf(tempResSlice[0]))
+			val := dataToFieldVal(tempResSlice[0], value.Type(), "val")
+			value.Set(reflect.ValueOf(val))
 		}
 
 	}
