@@ -16,6 +16,8 @@ func TestExpr_eval(t *testing.T) {
 		"user": &TestUser{Name: "wenj91"},
 		"m":    map[string]interface{}{"user": &TestUser{Name: "wenj91"}},
 		"m1":   map[string]interface{}{"name": "wenj91"},
+		"arr":  []string{"1", "2"},
+		"arr2":  []string{},
 	}
 	expression := []string{
 		"1 != 1",
@@ -39,6 +41,8 @@ func TestExpr_eval(t *testing.T) {
 		"val == ''",
 		"val != nil && val == ''",
 		"val != nil and val == ''",
+		"arr != nil and len(arr) > 0",
+		"arr2 != nil and len(arr2) > 0",
 	}
 
 	for i, ex := range expression {
@@ -50,9 +54,9 @@ func TestExpr_eval(t *testing.T) {
 
 func assertExpr(i int, ok bool, expr string) {
 	switch i {
-	case 0, 3, 4, 6, 8, 9, 12, 14, 17: // false
+	case 0, 3, 4, 6, 8, 9, 12, 14, 17, 22: // false
 		assertNotTrue(ok, "Expr:"+expr+" Result:true")
-	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19, 20: // true
+	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19, 20, 21: // true
 		assertTrue(ok, "Expr:"+expr+" Result:false")
 	}
 }

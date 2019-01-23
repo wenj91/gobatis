@@ -15,7 +15,7 @@
 <!ELEMENT delete (if*, foreach*)>
 <!ATTLIST delete id ID #REQUIRED>
 
-<!ELEMENT if ()>
+<!ELEMENT if (foreach*)>
 <!ATTLIST if test(#PCDATA) #REQUIRED>
 
 <!ELEMENT foreach ()>
