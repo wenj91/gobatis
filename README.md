@@ -99,6 +99,27 @@ value: 则数据库查询结果为单个数值
     <delete id="deleteById">
         delete from user where id=#{id}
     </delete>
+    <select id="queryStructsByCond" resultType="structs">
+         SELECT id, name, crtTm, pwd, email FROM user
+         <where>
+             <if test="Name != nil and Name != ''">and name = #{Name}</if>
+         </where>
+         order by id
+    </select>
+     <select id="queryStructsByCond2" resultType="structs">
+         SELECT id, name, crtTm, pwd, email FROM user
+         <trim prefixOverrides="and" prefix="where" suffixOverrides="," suffix="and 1=1">
+              <if test="Name != nil and Name != ''">and name = #{Name}</if>
+         </trim>
+         order by id
+    </select>
+    <update id="updateByCond">
+        update user
+        <set>
+            <if test="Name != nil and Name2 != ''">name = #{Name},</if>
+        </set>
+        where id = #{Id}
+    </update>
 </mapper>
 ```
 
@@ -145,9 +166,31 @@ func main() {
 	structsRes := make([]*User, 0)
 	err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
 	fmt.Println("userMapper.queryStructs-->", structsRes, err)
+	
+	param = User{
+    		Id: gobatis.NullInt64{Int64: 1, Valid: true},
+    		Name: gobatis.NullString{String: "wenj1993", Valid: true},
+	}
+	
+	// set tag
+    affected, err := gb.Update("userMapper.updateByCond", param)
+    fmt.Println("updateByCond:", affected, err)
+
+    param = User{Name: gobatis.NullString{String:"wenj1993", Valid:true}}
+    // where tag
+    res := make([]*User, 0)
+    err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+    fmt.Println("queryStructsByCond", res, err)
+    
+    // trim tag
+    res = make([]*User, 0)
+    err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
+    fmt.Println("queryStructsByCond2", res, err)
+
 
 	// 开启事务示例
 	tx, _ := gb.Begin()
+	defer tx.Rollback()
 	tx.Select("userMapper.findMapById", map[string]interface{}{"id": 1,})(mapRes)
 	fmt.Println("tx userMapper.findMapById-->", mapRes, err)
 	tx.Commit()

@@ -10,7 +10,9 @@ import (
 type TUser struct {
 	Id       int64      `field:"id"`
 	Name     string     `field:"name"`
-	Password NullString `field:"password"`
+	Password NullString `field:"pwd"`
+	Email    NullString `field:"email"`
+	CrtTm    NullTime   `field:"crtTm"`
 }
 
 func TestGoBatis(t *testing.T) {
@@ -26,7 +28,7 @@ func TestGoBatis(t *testing.T) {
 	//result := make([]interface{}, 0)
 	//var result interface{}
 	//result := make([]TUser, 0)
-	var result TUser
+	var result *TUser
 	err := gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
@@ -45,15 +47,31 @@ func TestGoBatis(t *testing.T) {
 	fmt.Println("id:", id, "err:", err)
 
 	uu := &TUser{
-		Id:   3,
+		Id:   1,
 		Name: "wenj1993",
 		Password: NullString{
 			String: "654321",
 			Valid:  true,
 		},
 	}
-	affected, err := gb.Update("userMapper.updateByStruct", uu)
-	fmt.Println("affected:", affected, "err:", err)
+
+	// test set
+	affected, err := gb.Update("userMapper.updateByCond", uu)
+	fmt.Println("updateByCond:", affected, err)
+
+	param := &TUser{
+		Name:"wenj1993",
+	}
+
+	// test where
+	res := make([]*TUser, 0)
+	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	fmt.Println("queryStructsByCond", res, err)
+
+	// test trim
+	res2 := make([]*TUser, 0)
+	err = gb.Select("userMapper.queryStructsByCond2", param)(&res2)
+	fmt.Println("queryStructsByCond", res2, err)
 
 	affected, err = gb.Delete("userMapper.deleteById", map[string]interface{}{
 		"id": 3,

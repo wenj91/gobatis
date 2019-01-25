@@ -6,7 +6,7 @@
 <!ATTLIST select id  ID #REQUIRED>
 <!ATTLIST select resultType(struct|structs|map|maps|array|arrays|value) #REQUIRED>
 
-<!ELEMENT update (if*, foreach*)>
+<!ELEMENT update (if*, foreach*,set*)>
 <!ATTLIST update id ID #REQUIRED>
 
 <!ELEMENT insert (if*, foreach*)>
@@ -17,6 +17,16 @@
 
 <!ELEMENT if (foreach*)>
 <!ATTLIST if test(#PCDATA) #REQUIRED>
+
+<!ELEMENT set (if*)>
+
+<!ELEMENT where (if*)>
+
+<!ELEMENT trim (if*)>
+<!ATTLIST trim prefix(#PCDATA)>
+<!ATTLIST trim prefixOverrides(#PCDATA)>
+<!ATTLIST trim suffixOverrides(#PCDATA)>
+<!ATTLIST trim suffix(#PCDATA)>
 
 <!ELEMENT foreach ()>
 <!ATTLIST foreach collection(#PCDATA) #REQUIRED>

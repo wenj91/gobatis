@@ -7,31 +7,42 @@ import (
 	"strings"
 )
 
-func createSqlNode(elems ...element) iSqlNode {
+func createSqlNode(elems ...element) []iSqlNode {
+	res := make([]iSqlNode, 0)
 	if len(elems) == 0 {
-		return &textSqlNode{""}
+		res = append(res, &textSqlNode{""})
+		return res
 	}
 
 	if len(elems) == 1 {
 		elem := elems[0]
 		if elem.ElementType == eleTpText {
-			return &textSqlNode{
+			res = append(res, &textSqlNode{
 				content: elem.Val.(string),
-			}
+			})
+
+			return res
 		}
 
 		n := elem.Val.(node)
 		if n.Name == "if" {
-			sqlNode := createSqlNode(n.Elements...)
-			return &ifSqlNode{
-				test:    n.Attrs["test"].Value,
-				sqlNode: sqlNode,
+			sqlNodes := createSqlNode(n.Elements...)
+			ifn := &ifSqlNode{
+				test: n.Attrs["test"].Value,
 			}
+
+			ifn.sqlNode = sqlNodes[0]
+			if len(sqlNodes) > 1 {
+				ifn.sqlNode = &mixedSqlNode{
+					sqlNodes: sqlNodes,
+				}
+			}
+
+			res = append(res, ifn)
+			return res
 		}
 
 		if n.Name == "foreach" {
-			sqlNode := createSqlNode(n.Elements...)
-
 			open := ""
 			openAttr, ok := n.Attrs["open"]
 			if ok {
@@ -68,8 +79,9 @@ func createSqlNode(elems ...element) iSqlNode {
 			}
 			collection := collectionAttr.Value
 
-			return &foreachSqlNode{
-				sqlNode:    sqlNode,
+			sqlNodes := createSqlNode(n.Elements...)
+
+			fn := &foreachSqlNode{
 				open:       open,
 				close:      closeStr,
 				separator:  separator,
@@ -77,20 +89,85 @@ func createSqlNode(elems ...element) iSqlNode {
 				index:      index,
 				collection: collection,
 			}
+
+			fn.sqlNode = sqlNodes[0]
+			if len(sqlNodes) > 1 {
+				fn.sqlNode = &mixedSqlNode{
+					sqlNodes: sqlNodes,
+				}
+			}
+
+			res = append(res, fn)
+			return res
+		}
+
+		if n.Name == "set" {
+			sqlNodes := createSqlNode(n.Elements...)
+			setN := &setSqlNode{
+				sqlNodes: sqlNodes,
+			}
+
+			res = append(res, setN)
+			return res
+		}
+
+		if n.Name == "trim" {
+			sqlNodes := createSqlNode(n.Elements...)
+
+			prefix := ""
+			prefixAttr, ok := n.Attrs["prefix"]
+			if ok {
+				prefix = prefixAttr.Value
+			}
+
+			preOv := ""
+			preOvAttr, ok := n.Attrs["prefixOverrides"]
+			if ok {
+				preOv = preOvAttr.Value
+			}
+
+			suffOv := ""
+			suffOvAttr, ok := n.Attrs["suffixOverrides"]
+			if ok {
+				suffOv = suffOvAttr.Value
+			}
+
+			suffix := ""
+			suffixAttr, ok := n.Attrs["suffix"]
+			if ok {
+				suffix = suffixAttr.Value
+			}
+			trimN := &trimSqlNode{
+				sqlNodes:        sqlNodes,
+				prefix:          prefix,
+				prefixOverrides: preOv,
+				suffixOverrides: suffOv,
+				suffix:          suffix,
+			}
+
+			res = append(res, trimN)
+			return res
+		}
+
+		if n.Name == "where" {
+			sqlNodes := createSqlNode(n.Elements...)
+			whereN := &whereSqlNode{
+				sqlNodes:        sqlNodes,
+			}
+
+			res = append(res, whereN)
+			return res
 		}
 
 		log.Fatalln("The tag:", n.Name, "not support, current version only support tag:<if> | <foreach>")
 	}
 
-	sns := make([]iSqlNode, 0)
 	for _, elem := range elems {
 		sqlNode := createSqlNode(elem)
-		sns = append(sns, sqlNode)
+		res = append(res, sqlNode...)
 	}
 
-	return &mixedSqlNode{
-		sqlNodes: sns,
-	}
+	return res
 }
 
 func buildMapperConfig(r io.Reader) *mapperConfig {

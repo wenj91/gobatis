@@ -1,27 +1,48 @@
 <?xml version="1.0" encoding="utf-8"?>
-<mapper namespace="Mapper">
-    <select id="findMapById" resultType="Map">
+<!DOCTYPE mapper PUBLIC "gobatis"
+        "https://raw.githubusercontent.com/wenj91/gobatis/master/gobatis.dtd">
+<mapper namespace="userMapper">
+    <select id="findMapById" resultType="map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
-    <select id="findStructByStruct" resultType="Struct">
-        SELECT id Id, name Name, create_time CrtTm FROM user where id=#{Id} order by id
+    <select id="findMapByValue" resultType="map">
+            SELECT id, name FROM user where id=#{0} order by id
     </select>
-    <insert id="insertStruct">
-        insert into user (name, email, create_time)
-        values (#{Name}, #{Email}, #{CrtTm})
-    </insert>
-    <insert id="insertStructsBatch">
-        insert into user (name, email, create_time)
-        values
-        <foreach collection="list" open="(" close=")" separator=",">
-            #{Name}, #{Email}, #{CrtTm}
-        </foreach>
-    </insert>
-    <update id="updateByStruct">
-        update user set name = #{Name}, email = #{Email}
+    <select id="findStructByStruct" resultType="struct">
+        SELECT id, name, crtTm FROM user where id=#{Id} order by id
+    </select>
+    <select id="findById" resultType="struct">
+        SELECT id, name FROM user where id=#{id} order by id
+    </select>
+    <select id="queryStructs" resultType="structs">
+        SELECT id, name, crtTm FROM user order by id
+    </select>
+     <select id="queryStructsByCond" resultType="structs">
+         SELECT id, name, crtTm, pwd, email FROM user
+         <where>
+             <if test="Name != nil and Name != ''">and name = #{Name}</if>
+         </where>
+         order by id
+    </select>
+     <select id="queryStructsByCond2" resultType="structs">
+         SELECT id, name, crtTm, pwd, email FROM user
+         <trim prefixOverrides="and" prefix="where" suffixOverrides="," suffix="and 1=1">
+              <if test="Name != nil and Name != ''">and name = #{Name}</if>
+         </trim>
+         order by id
+    </select>
+    <update id="updateByCond">
+        update user
+		<set>
+			<if test="Name != nil and Name2 != ''">name = #{Name},</if>
+			<if test="Password != nil and Password != ''">pwd = #{Password},</if>
+		</set>
         where id = #{Id}
     </update>
-
+    <insert id="saveUser">
+        insert into user (name, email, crtTm)
+        values (#{Name}, #{Email}, #{CrtTm})
+    </insert>
     <delete id="deleteById">
         delete from user where id=#{id}
     </delete>

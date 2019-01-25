@@ -210,28 +210,121 @@ type setSqlNode struct {
 }
 
 func (this *setSqlNode) build(ctx *dynamicContext) bool {
-	panic("implement me")
+
+	sqlStr := ""
+	for _, sqlNode := range this.sqlNodes  {
+		tempCtx := &dynamicContext{
+			params: ctx.params,
+		}
+		sqlNode.build(tempCtx)
+		if sqlStr != "" && tempCtx.sqlStr != "" {
+			sqlStr += " , "
+		}
+
+		sqlStr += tempCtx.sqlStr
+
+		for k, v := range tempCtx.params {
+			ctx.params[k] = v
+		}
+	}
+
+	if sqlStr != "" {
+		ctx.appendSql(" set ")
+		sqlStr = strings.TrimSpace(sqlStr)
+		sqlStr = strings.TrimSuffix(sqlStr, ",")
+		ctx.appendSql(sqlStr)
+	}
+
+	return true
 }
 
 // trim node
-type trimNode struct {
-	prefix          string
-	prefixOverrides string
-	suffixOverrides string
+type trimSqlNode struct {
+	prefix          string // prefix：前缀　
+	prefixOverrides string // prefixOverride：去掉第一个出现prefixOverrides字符串
+	suffixOverrides string // suffixOverride：去掉最后一个字符串
+	suffix          string // suffix：后缀
 	sqlNodes        []iSqlNode
 }
 
-func (this *trimNode) build(ctx *dynamicContext) bool {
-	panic("implement me")
+func (this *trimSqlNode) build(ctx *dynamicContext) bool {
+	tempCtx := &dynamicContext{
+		params: ctx.params,
+	}
+
+	for _, sqlNode := range this.sqlNodes  {
+		if tempCtx.sqlStr != "" {
+			tempCtx.sqlStr += " "
+		}
+		sqlNode.build(tempCtx)
+	}
+
+	if tempCtx.sqlStr != "" {
+		sqlStr := strings.TrimSpace(tempCtx.sqlStr)
+
+		preOv := strings.TrimSpace(this.prefixOverrides)
+		if preOv != "" {
+			sqlStr = strings.TrimPrefix(sqlStr, preOv + " ")
+		}
+
+		suffOv := strings.TrimSpace(this.suffixOverrides)
+		if suffOv != "" {
+			sqlStr = strings.TrimSuffix(sqlStr, suffOv + " ")
+		}
+
+		pre := strings.TrimSpace(this.prefix)
+		if pre != "" {
+			sqlStr = pre + " " + sqlStr
+		}
+
+		suff := strings.TrimSpace(this.suffix)
+		if suff != "" {
+			sqlStr += " " + suff
+		}
+
+		ctx.appendSql(sqlStr)
+	}
+
+	for k, v := range tempCtx.params {
+		ctx.params[k] = v
+	}
+
+	return true
 }
 
 // where node
-type whereNode struct {
+type whereSqlNode struct {
 	sqlNodes []iSqlNode
 }
 
-func (this *whereNode) build(ctx *dynamicContext) bool {
-	panic("implement me")
+func (this *whereSqlNode) build(ctx *dynamicContext) bool {
+	tempCtx := &dynamicContext{
+		params: ctx.params,
+	}
+
+	for _, sqlNode := range this.sqlNodes  {
+		if tempCtx.sqlStr != "" {
+			tempCtx.sqlStr += " "
+		}
+		sqlNode.build(tempCtx)
+	}
+
+	if tempCtx.sqlStr != "" {
+		sqlStr := strings.TrimSpace(tempCtx.sqlStr)
+		sqlStr = strings.TrimPrefix(sqlStr, "and ")
+		sqlStr = strings.TrimPrefix(sqlStr, "AND ")
+		sqlStr = strings.TrimPrefix(sqlStr, "or ")
+		sqlStr = strings.TrimPrefix(sqlStr, "OR ")
+
+		ctx.appendSql(" where ")
+		ctx.appendSql(sqlStr)
+	}
+
+	for k, v := range tempCtx.params {
+		ctx.params[k] = v
+	}
+
+	return true
 }
 
 // choose node

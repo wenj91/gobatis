@@ -23,6 +23,14 @@ func TestBuildConfig(t *testing.T)  {
         update user set name = #{Name}, email = #{Email}
         where id = #{Id}
     </update>
+	<update id="updateByCond">
+        update user 
+		<set>
+			<if test="Name != nil and Name != ''">name = #{Name},</if>
+			<if test="Email != nil and Email != ''">email = #{Email},</if>
+		</set>
+        where id = #{Id}
+    </update>
     <delete id="deleteById">
         delete from user where id=#{id}
     </delete>
@@ -34,4 +42,5 @@ func TestBuildConfig(t *testing.T)  {
 	assertNotNil(conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
 	assertNotNil(conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
 	assertNotNil(conf.getMappedStmt("Mapper.deleteById"), "Mapper.deleteById mapped stmt is nil")
+	assertNotNil(conf.getMappedStmt("Mapper.updateByCond"), "Mapper.deleteById mapped stmt is nil")
 }

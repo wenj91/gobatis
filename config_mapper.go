@@ -40,8 +40,12 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 
 	sn := createSqlNode(rootNode.Elements...)
 
-	ds := &dynamicSqlSource{
-		sqlNode: sn,
+	ds := &dynamicSqlSource{}
+	ds.sqlNode = sn[0]
+	if len(sn) > 1 {
+		ds.sqlNode = &mixedSqlNode{
+			sqlNodes: sn,
+		}
 	}
 
 	return &mappedStmt{
