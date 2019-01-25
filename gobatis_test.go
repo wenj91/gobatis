@@ -43,8 +43,8 @@ func TestGoBatis(t *testing.T) {
 		},
 	}
 
-	id, err := gb.Insert("userMapper.saveUser", u)
-	fmt.Println("id:", id, "err:", err)
+	id, a, err := gb.Insert("userMapper.saveUser", u)
+	fmt.Println("id:", id, "affected:", a, "err:", err)
 
 	uu := &TUser{
 		Id:   1,
@@ -60,7 +60,7 @@ func TestGoBatis(t *testing.T) {
 	fmt.Println("updateByCond:", affected, err)
 
 	param := &TUser{
-		Name:"wenj1993",
+		Name: "wenj1993",
 	}
 
 	// test where
