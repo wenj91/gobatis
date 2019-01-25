@@ -131,7 +131,7 @@ package main
 import (
 	"fmt"
 	_ "github.com/go-sql-driver/mysql" // 引入驱动
-	"github.com/wenj91/gobatis"  // 引入gobatis
+	"github.com/wenj91/gobatis"        // 引入gobatis
 )
 
 // 实体结构示例， tag：field为数据库对应字段名称
@@ -145,7 +145,7 @@ type User struct {
 func main() {
 	// 初始化db，参数为db.yml路径，如：db.yml
 	gobatis.ConfInit("db.yml")
-	
+
 	// 获取数据源，参数为数据源名称，如：datasource1
 	gb := gobatis.NewGoBatis("datasource1")
 
@@ -161,32 +161,31 @@ func main() {
 	var structRes *User
 	err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
 	fmt.Println("userMapper.findStructByStruct-->", structRes, err)
-	
+
 	// 查询实体列表
 	structsRes := make([]*User, 0)
 	err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
 	fmt.Println("userMapper.queryStructs-->", structsRes, err)
-	
+
 	param = User{
-    		Id: gobatis.NullInt64{Int64: 1, Valid: true},
-    		Name: gobatis.NullString{String: "wenj1993", Valid: true},
+		Id:   gobatis.NullInt64{Int64: 1, Valid: true},
+		Name: gobatis.NullString{String: "wenj1993", Valid: true},
 	}
-	
+
 	// set tag
-    affected, err := gb.Update("userMapper.updateByCond", param)
-    fmt.Println("updateByCond:", affected, err)
+	affected, err := gb.Update("userMapper.updateByCond", param)
+	fmt.Println("updateByCond:", affected, err)
 
-    param = User{Name: gobatis.NullString{String:"wenj1993", Valid:true}}
-    // where tag
-    res := make([]*User, 0)
-    err = gb.Select("userMapper.queryStructsByCond", param)(&res)
-    fmt.Println("queryStructsByCond", res, err)
-    
-    // trim tag
-    res = make([]*User, 0)
-    err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
-    fmt.Println("queryStructsByCond2", res, err)
+	param = User{Name: gobatis.NullString{String: "wenj1993", Valid: true}}
+	// where tag
+	res := make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	fmt.Println("queryStructsByCond", res, err)
 
+	// trim tag
+	res = make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
+	fmt.Println("queryStructsByCond2", res, err)
 
 	// 开启事务示例
 	tx, _ := gb.Begin()
