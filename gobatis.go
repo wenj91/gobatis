@@ -22,7 +22,7 @@ const (
 
 type GoBatis interface {
 	Select(stmt string, param interface{}) func(res interface{}) error
-	Insert(stmt string, param interface{}) (int64, error)
+	Insert(stmt string, param interface{}) (int64, int64, error)
 	Update(stmt string, param interface{}) (int64, error)
 	Delete(stmt string, param interface{}) (int64, error)
 }
@@ -218,10 +218,10 @@ func (this *gbBase) Select(stmt string, param interface{}) func(res interface{})
 }
 
 // insert(stmt string, param interface{})
-func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
+func (this *gbBase) Insert(stmt string, param interface{}) (int64, int64, error) {
 	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
-		return 0, errors.New("Mapped statement not found:" + stmt)
+		return 0, 0, errors.New("Mapped statement not found:" + stmt)
 	}
 	ms.dbType = this.dbType
 
@@ -231,12 +231,12 @@ func (this *gbBase) Insert(stmt string, param interface{}) (int64, error) {
 		gb: this,
 	}
 
-	lastInsertId, _, err := executor.update(ms, params)
+	lastInsertId, affected, err := executor.update(ms, params)
 	if nil != err {
-		return 0, err
+		return 0, 0, err
 	}
 
-	return lastInsertId, nil
+	return lastInsertId, affected, nil
 }
 
 // update(stmt string, param interface{})
