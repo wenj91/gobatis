@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func TestBuildConfig(t *testing.T)  {
+func TestBuildConfig(t *testing.T) {
 	xmlStr := `
 <?xml version="1.0" encoding="utf-8"?>
 <mapper namespace="Mapper">
@@ -36,7 +36,7 @@ func TestBuildConfig(t *testing.T)  {
     </delete>
 </mapper>
 `
-	r:= strings.NewReader(xmlStr)
+	r := strings.NewReader(xmlStr)
 	conf := buildMapperConfig(r)
 	assertNotNil(conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
 	assertNotNil(conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")

@@ -212,7 +212,7 @@ type setSqlNode struct {
 func (this *setSqlNode) build(ctx *dynamicContext) bool {
 
 	sqlStr := ""
-	for _, sqlNode := range this.sqlNodes  {
+	for _, sqlNode := range this.sqlNodes {
 		tempCtx := &dynamicContext{
 			params: ctx.params,
 		}
@@ -240,7 +240,7 @@ func (this *setSqlNode) build(ctx *dynamicContext) bool {
 
 // trim node
 type trimSqlNode struct {
-	prefix          string // prefix：前缀　
+	prefix          string // prefix：前缀
 	prefixOverrides string // prefixOverride：去掉第一个出现prefixOverrides字符串
 	suffixOverrides string // suffixOverride：去掉最后一个字符串
 	suffix          string // suffix：后缀
@@ -252,7 +252,7 @@ func (this *trimSqlNode) build(ctx *dynamicContext) bool {
 		params: ctx.params,
 	}
 
-	for _, sqlNode := range this.sqlNodes  {
+	for _, sqlNode := range this.sqlNodes {
 		if tempCtx.sqlStr != "" {
 			tempCtx.sqlStr += " "
 		}
@@ -264,12 +264,12 @@ func (this *trimSqlNode) build(ctx *dynamicContext) bool {
 
 		preOv := strings.TrimSpace(this.prefixOverrides)
 		if preOv != "" {
-			sqlStr = strings.TrimPrefix(sqlStr, preOv + " ")
+			sqlStr = strings.TrimPrefix(sqlStr, preOv+" ")
 		}
 
 		suffOv := strings.TrimSpace(this.suffixOverrides)
 		if suffOv != "" {
-			sqlStr = strings.TrimSuffix(sqlStr, suffOv + " ")
+			sqlStr = strings.TrimSuffix(sqlStr, suffOv+" ")
 		}
 
 		pre := strings.TrimSpace(this.prefix)
@@ -302,7 +302,7 @@ func (this *whereSqlNode) build(ctx *dynamicContext) bool {
 		params: ctx.params,
 	}
 
-	for _, sqlNode := range this.sqlNodes  {
+	for _, sqlNode := range this.sqlNodes {
 		if tempCtx.sqlStr != "" {
 			tempCtx.sqlStr += " "
 		}

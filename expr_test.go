@@ -17,7 +17,7 @@ func TestExpr_eval(t *testing.T) {
 		"m":    map[string]interface{}{"user": &TestUser{Name: "wenj91"}},
 		"m1":   map[string]interface{}{"name": "wenj91"},
 		"arr":  []string{"1", "2"},
-		"arr2":  []string{},
+		"arr2": []string{},
 	}
 	expression := []string{
 		"1 != 1",
