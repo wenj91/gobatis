@@ -92,6 +92,9 @@ value: 则数据库查询结果为单个数值
     <select id="queryStructs" resultType="structs">
             SELECT id, name, crtTm FROM user order by id
     </select>
+    <select id="queryStructsByOrder" resultType="structs">
+            SELECT id, name, crtTm FROM user order by ${id}
+    </select>
     <insert id="insertStruct">
         insert into user (name, email, crtTm)
         values (#{Name}, #{Email}, #{CrtTm})
