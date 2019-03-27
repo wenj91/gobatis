@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"time"
+	"strings"
 )
 
 type config struct {
@@ -76,14 +77,25 @@ func ConfInit(dbConfPath string)  {
 
 func dbInit(dbConf *dbConfig)  {
 	db = make(map[string]*sql.DB)
-	for k, item := range dbConf.DB {
+	if len(dbConf.DB) <= 0 {
+		panic("No config for datasource")
+	}
+
+	for _, item := range dbConf.DB {
+		if item.DataSource == "" {
+			panic("Db config err: datasource must not be nil")
+			return
+		}
+
+		item.DataSource = strings.TrimSpace(item.DataSource)
+
 		if item.DriverName == "" {
-			log.Fatalln("Db config err: driverName must not be nil")
+			panic("Db config err: driverName must not be nil")
 			return
 		}
 
 		if item.DataSourceName == "" {
-			log.Fatalln("Db config err: dataSourceName must not be nil")
+			panic("Db config err: dataSourceName must not be nil")
 			return
 		}
 
@@ -116,6 +128,6 @@ func dbInit(dbConf *dbConfig)  {
 			dbConn.SetMaxIdleConns(item.MaxIdleConns)
 		}
 
-		db[k] = dbConn
+		db[item.DataSource] = dbConn
 	}
 }

@@ -1,5 +1,5 @@
 db:
-  datasource1:
+  - datasource: ds
     driverName: mysql
     dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
     maxLifeTime: 120
