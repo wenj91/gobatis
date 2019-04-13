@@ -24,7 +24,7 @@ var resSetProcMap = map[ResultType]resultTypeProc{
 func resStructProc(rows *sql.Rows, res interface{}) error {
 	resVal := reflect.ValueOf(res)
 	if resVal.Kind() != reflect.Ptr {
-		return errors.New("Struct query result must be ptr")
+		return errors.New("struct query result must be ptr")
 	}
 
 	if resVal.Elem().Kind() != reflect.Ptr ||
@@ -78,12 +78,12 @@ Tips: "(&res)" --> don't forget "&"
 func resStructsProc(rows *sql.Rows, res interface{}) error {
 	sliceVal := reflect.ValueOf(res)
 	if sliceVal.Kind() != reflect.Ptr {
-		return errors.New("Structs query result must be ptr")
+		return errors.New("structs query result must be ptr")
 	}
 
 	slicePtr := reflect.Indirect(sliceVal)
 	if slicePtr.Kind() != reflect.Slice && slicePtr.Kind() != reflect.Array {
-		return errors.New("Structs query result must be slice")
+		return errors.New("structs query result must be slice")
 	}
 
 	//get elem type
@@ -95,7 +95,7 @@ func resStructsProc(rows *sql.Rows, res interface{}) error {
 	}
 
 	if resultType.Kind() != reflect.Struct {
-		return errors.New("Structs query results item must be struct")
+		return errors.New("structs query results item must be struct")
 	}
 
 	arr, err := rowsToStructs(rows, resultType)
@@ -117,7 +117,7 @@ func resStructsProc(rows *sql.Rows, res interface{}) error {
 func resValueProc(rows *sql.Rows, res interface{}) error {
 	resPtr := reflect.ValueOf(res)
 	if resPtr.Kind() != reflect.Ptr {
-		return errors.New("Value query result must be ptr")
+		return errors.New("value query result must be ptr")
 	}
 
 	arr, err := rowsToSlices(rows)
@@ -126,12 +126,12 @@ func resValueProc(rows *sql.Rows, res interface{}) error {
 	}
 
 	if len(arr) > 1 {
-		return errors.New("Value query result more than one row")
+		return errors.New("value query result more than one row")
 	}
 
 	tempResSlice := arr[0].([]interface{})
 	if len(tempResSlice) > 1 {
-		return errors.New("Value query result more than one col")
+		return errors.New("value query result more than one col")
 	}
 
 	if len(tempResSlice) > 0 {
@@ -148,12 +148,12 @@ func resValueProc(rows *sql.Rows, res interface{}) error {
 func resSlicesProc(rows *sql.Rows, res interface{}) error {
 	resPtr := reflect.ValueOf(res)
 	if resPtr.Kind() != reflect.Ptr {
-		return errors.New("Slices query result must be ptr")
+		return errors.New("slices query result must be ptr")
 	}
 
 	value := reflect.Indirect(resPtr)
 	if value.Kind() != reflect.Slice {
-		return errors.New("Slices query result must be slice ptr")
+		return errors.New("slices query result must be slice ptr")
 	}
 
 	arr, err := rowsToSlices(rows)
@@ -171,12 +171,12 @@ func resSlicesProc(rows *sql.Rows, res interface{}) error {
 func resSliceProc(rows *sql.Rows, res interface{}) error {
 	resPtr := reflect.ValueOf(res)
 	if resPtr.Kind() != reflect.Ptr {
-		return errors.New("Slice query result must be ptr")
+		return errors.New("slice query result must be ptr")
 	}
 
 	value := reflect.Indirect(resPtr)
 	if value.Kind() != reflect.Slice {
-		return errors.New("Slice query result must be slice ptr")
+		return errors.New("slice query result must be slice ptr")
 	}
 
 	arr, err := rowsToSlices(rows)
@@ -185,7 +185,7 @@ func resSliceProc(rows *sql.Rows, res interface{}) error {
 	}
 
 	if len(arr) > 1 {
-		return errors.New("Slice query result more than one row")
+		return errors.New("slice query result more than one row")
 	}
 
 	if len(arr) > 0 {
@@ -199,11 +199,11 @@ func resSliceProc(rows *sql.Rows, res interface{}) error {
 func resMapProc(rows *sql.Rows, res interface{}) error {
 	resBean := reflect.ValueOf(res)
 	if resBean.Kind() == reflect.Ptr {
-		return errors.New("Map query result can not be ptr")
+		return errors.New("map query result can not be ptr")
 	}
 
 	if resBean.Kind() != reflect.Map {
-		return errors.New("Map query result must be map")
+		return errors.New("map query result must be map")
 	}
 
 	arr, err := rowsToMaps(rows)
@@ -212,7 +212,7 @@ func resMapProc(rows *sql.Rows, res interface{}) error {
 	}
 
 	if len(arr) > 1 {
-		return errors.New("Map query result more than one row")
+		return errors.New("map query result more than one row")
 	}
 
 	if len(arr) > 0 {
@@ -229,12 +229,12 @@ func resMapProc(rows *sql.Rows, res interface{}) error {
 func resMapsProc(rows *sql.Rows, res interface{}) error {
 	resPtr := reflect.ValueOf(res)
 	if resPtr.Kind() != reflect.Ptr {
-		return errors.New("Maps query result must be ptr")
+		return errors.New("maps query result must be ptr")
 	}
 
 	value := reflect.Indirect(resPtr)
 	if value.Kind() != reflect.Slice {
-		return errors.New("Maps query result must be slice ptr")
+		return errors.New("maps query result must be slice ptr")
 	}
 	arr, err := rowsToMaps(rows)
 	if nil != err {

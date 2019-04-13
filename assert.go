@@ -14,7 +14,7 @@ func assertEqual(a interface{}, b interface{}, message string) {
 	}
 }
 
-func assertNotNil(a interface{}, message string)  {
+func assertNotNil(a interface{}, message string) {
 	if nil == a {
 		if message == "" {
 			message = fmt.Sprintf("%v == nil", a)
@@ -23,7 +23,7 @@ func assertNotNil(a interface{}, message string)  {
 	}
 }
 
-func assertNil(a interface{}, message string)  {
+func assertNil(a interface{}, message string) {
 	if nil != a {
 		if message == "" {
 			message = fmt.Sprintf("%v != nil", a)
@@ -32,7 +32,7 @@ func assertNil(a interface{}, message string)  {
 	}
 }
 
-func assertTrue(ok bool, message string)  {
+func assertTrue(ok bool, message string) {
 	if !ok {
 		if message == "" {
 			message = fmt.Sprintf("ok == false")
@@ -41,7 +41,7 @@ func assertTrue(ok bool, message string)  {
 	}
 }
 
-func assertNotTrue(ok bool, message string)  {
+func assertNotTrue(ok bool, message string) {
 	if ok {
 		if message == "" {
 			message = fmt.Sprintf("ok == true")

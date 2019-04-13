@@ -1,9 +1,9 @@
 package gobatis
 
 import (
+	"context"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql"
-	"log"
 	"testing"
 )
 
@@ -16,13 +16,13 @@ type TUser struct {
 }
 
 func TestGoBatis(t *testing.T) {
-	ConfInit("")
-	if nil == conf {
-		log.Println("db config == nil")
-		return
+
+	batis, e := NewGoBatis(context.Background(), nil)
+	if nil != e {
+		panic(e)
 	}
 
-	gb := NewGoBatis("datasource1")
+	gb, e := batis.Begin()
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)

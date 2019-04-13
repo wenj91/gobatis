@@ -24,9 +24,16 @@
 <!ELEMENT if (foreach*)>
 <!ATTLIST if test(#PCDATA) #REQUIRED>
 
+<!ELEMENT when (foreach*, if*)>
+<!ATTLIST when test(#PCDATA) #REQUIRED>
+
+<!ELEMENT otherwise ()>
+
+<!ELEMENT choose (when* otherwise*)>
+
 <!ELEMENT set (if*)>
 
-<!ELEMENT where (if*)>
+<!ELEMENT where (if*, choose*, include*, foreach*)>
 
 <!ELEMENT trim (if*)>
 <!ATTLIST trim prefix(#PCDATA)>
