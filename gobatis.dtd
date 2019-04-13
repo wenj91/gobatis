@@ -35,7 +35,7 @@
 
 <!ELEMENT where (if*, choose*, include*, foreach*)>
 
-<!ELEMENT trim (if*)>
+<!ELEMENT trim (if*, choose*)>
 <!ATTLIST trim prefix(#PCDATA)>
 <!ATTLIST trim prefixOverrides(#PCDATA)>
 <!ATTLIST trim suffixOverrides(#PCDATA)>
