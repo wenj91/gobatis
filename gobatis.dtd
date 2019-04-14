@@ -2,18 +2,24 @@
 <!ELEMENT mapper (select*, update*, insert*, delete*)>
 <!ATTLIST mapper namespace>
 
-<!ELEMENT select (if*, foreach*)>
+<!ELEMENT select (if*, foreach*, set*, trim*, where*)>
 <!ATTLIST select id  ID #REQUIRED>
 <!ATTLIST select resultType(struct|structs|map|maps|array|arrays|value) #REQUIRED>
 
-<!ELEMENT update (if*, foreach*,set*)>
+<!ELEMENT update (if*, foreach*, include*, set*)>
 <!ATTLIST update id ID #REQUIRED>
 
-<!ELEMENT insert (if*, foreach*)>
+<!ELEMENT insert (if*, foreach*, include*)>
 <!ATTLIST insert id ID #REQUIRED>
 
-<!ELEMENT delete (if*, foreach*)>
+<!ELEMENT delete (if*, foreach*, include*)>
 <!ATTLIST delete id ID #REQUIRED>
+
+<!ELEMENT sql (#PCDATA)>
+<!ATTLIST sql id ID #REQUIRED>
+
+<!ELEMENT include ()>
+<!ATTLIST include refid(#PCDATA) #REQUIRED>
 
 <!ELEMENT if (foreach*)>
 <!ATTLIST if test(#PCDATA) #REQUIRED>

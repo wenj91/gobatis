@@ -152,7 +152,7 @@ func createSqlNode(elems ...element) []iSqlNode {
 		if n.Name == "where" {
 			sqlNodes := createSqlNode(n.Elements...)
 			whereN := &whereSqlNode{
-				sqlNodes:        sqlNodes,
+				sqlNodes: sqlNodes,
 			}
 
 			res = append(res, whereN)
@@ -175,6 +175,7 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 
 	conf := &mapperConfig{
 		mappedStmts: make(map[string]*node),
+		cache:       make(map[string]*mappedStmt),
 	}
 
 	if rootNode.Name != "mapper" {
@@ -195,6 +196,16 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 			childNode := elem.Val.(node)
 			switch childNode.Name {
 			case "select", "update", "insert", "delete":
+				if childNode.Id == "" {
+					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml mapperConfig!")
+				}
+
+				fid := namespace + childNode.Id
+				if ok := conf.put(fid, &childNode); !ok {
+					log.Fatalln("Repeat id for:", fid, "Please check your xml mapperConfig!")
+				}
+
+			case "sql":
 				if childNode.Id == "" {
 					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml mapperConfig!")
 				}

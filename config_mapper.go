@@ -7,6 +7,8 @@ import (
 
 type mapperConfig struct {
 	mappedStmts map[string]*node
+	mappedSql   map[string]*node
+	cache       map[string]*mappedStmt
 	mu          sync.Mutex
 }
 
@@ -22,7 +24,30 @@ func (this *mapperConfig) put(id string, n *node) bool {
 	return true
 }
 
+func (this *mapperConfig) putSql(id string, n *node) bool {
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
+	if _, ok := this.mappedSql[id]; ok {
+		return false
+	}
+
+	this.mappedSql[id] = n
+	return true
+}
+
 func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
+	if nil == this.cache {
+		this.cache = make(map[string]*mappedStmt)
+	}
+	
+	if st, ok := this.cache[id]; ok {
+		return st
+	}
+
+	this.mu.Lock()
+	defer this.mu.Unlock()
+
 	rootNode, ok := this.mappedStmts[id]
 	if !ok {
 		log.Fatalln("Can not find id:", id, "mapped stmt")
@@ -48,8 +73,12 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 		}
 	}
 
-	return &mappedStmt{
+	stmt := &mappedStmt{
 		sqlSource:  ds,
 		resultType: ResultType(resultType),
 	}
+
+	this.cache[id] = stmt
+
+	return stmt
 }

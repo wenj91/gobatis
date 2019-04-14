@@ -140,7 +140,6 @@ func resValueProc(rows *sql.Rows, res interface{}) error {
 			val := dataToFieldVal(tempResSlice[0], value.Type(), "val")
 			value.Set(reflect.ValueOf(val))
 		}
-
 	}
 
 	return nil

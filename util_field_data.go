@@ -3,11 +3,11 @@ package gobatis
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
+	"log"
 	"reflect"
 	"strconv"
 	"time"
-	"fmt"
-	"log"
 )
 
 func stringToVal(data interface{}, tp reflect.Type) interface{} {

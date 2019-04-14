@@ -8,13 +8,13 @@ import (
 func TestDbConfig(t *testing.T)  {
 	ymlStr := `
 db:
-  datasource1:
+  -	datasource: ds1
     driverName: mysql
     dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
     maxLifeTime: 120
     maxOpenConns: 10
     maxIdleConns: 5
-  datasource2:
+  -	datasource: ds2
     driverName: mysql
     dataSourceName: root:123456@tcp(127.0.0.1:3306)/test?charset=utf8
     maxLifeTime: 120
@@ -27,8 +27,8 @@ mappers:
 `
 	dbconf := buildDbConfig(ymlStr)
 
-	dbc, ok := dbconf.DB["datasource1"]
-	assertTrue(ok, "test fail: No datasource1")
+	dbc := dbconf.getDataSourceByName("ds1")
+	assertTrue(dbc != nil, "test fail: No datasource1")
 	assertTrue(dbconf.ShowSql, "test fail: showSql == false")
 	assertEqual(dbc.DriverName, "mysql", "test fail, actual:" + dbc.DriverName)
 	assertEqual(dbc.DataSourceName, "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", "test fail, actual:" + dbc.DataSourceName)

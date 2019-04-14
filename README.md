@@ -16,13 +16,13 @@
 | maxIdleConns | 否 | 5 | 最大挂起连接数，默认值为: 5
 
 ### 示例
-* db配置示例  
+* db配置示例(配置较之前的有所调整)  
 以下为多数据源配置示例: db.yml
 ```yaml
 # 数据库配置
 db:
   # 数据源名称1
-  datasource1:
+  - datasource: ds1
     # 驱动名
     driverName: mysql
     # 数据源
@@ -34,7 +34,7 @@ db:
     # 最大挂起连接数
     maxIdleConns: 5
   # 数据源名称2
-  datasource2:
+  - datasource: ds2
     # 驱动名
     driverName: mysql
     # 数据源
@@ -90,7 +90,10 @@ value: 则数据库查询结果为单个数值
         SELECT id, name, crtTm FROM user where id=#{Id} order by id
     </select>
     <select id="queryStructs" resultType="structs">
-            SELECT id, name, crtTm FROM user order by id
+        SELECT id, name, crtTm FROM user order by id
+    </select>
+    <select id="queryStructsByOrder" resultType="structs">
+        SELECT id, name, crtTm FROM user order by ${id} desc
     </select>
     <insert id="insertStruct">
         insert into user (name, email, crtTm)
@@ -147,7 +150,7 @@ func main() {
 	gobatis.ConfInit("db.yml")
 
 	// 获取数据源，参数为数据源名称，如：datasource1
-	gb := gobatis.NewGoBatis("datasource1")
+	gb := gobatis.NewGoBatis("ds1")
 
 	//传入id查询Map
 	mapRes := make(map[string]interface{})
@@ -186,6 +189,13 @@ func main() {
 	res = make([]*User, 0)
 	err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
 	fmt.Println("queryStructsByCond2", res, err)
+	
+	// ${id}
+	res = make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
+		"id":"id",
+	})(&res)
+	fmt.Println("queryStructsByCond", res, err)
 
 	// 开启事务示例
 	tx, _ := gb.Begin()

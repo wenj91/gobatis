@@ -59,7 +59,7 @@ func NewGoBatis(datasource string) *Db {
 	gb := &Db{
 		gbBase{
 			db:     ds,
-			dbType: DbType(conf.dbConf.DB[datasource].DriverName),
+			dbType: DbType(conf.dbConf.getDataSourceByName(datasource).DriverName),
 			config: conf,
 		},
 	}
