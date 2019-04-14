@@ -6,22 +6,22 @@ import (
 )
 
 type executor struct {
-	gb *gbBase
+	*Runner
 }
 
-func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
+func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
 	boundSql, paramArr, err := paramProc(ms, params)
 	if nil != err {
 		return 0, 0, err
 	}
 
-	if conf.dbConf.ShowSql {
+	if showSql {
 		log.Println("SQL:", boundSql.sqlStr)
 		log.Println("ParamMappings:", boundSql.paramMappings)
 		log.Println("Params:", paramArr)
 	}
 
-	stmt, err := this.gb.db.Prepare(boundSql.sqlStr)
+	stmt, err := exec.tx.Prepare(boundSql.sqlStr)
 	if nil != err {
 		return 0, 0, err
 	}
@@ -43,27 +43,26 @@ func (this *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 	return lastInsertId, affected, nil
 }
 
-
-func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res interface{}) error {
+func (exec *executor) query(ms *mappedStmt, params map[string]interface{}, res interface{}) error {
 	boundSql, paramArr, err := paramProc(ms, params)
 	if nil != err {
 		return err
 	}
 
-	if conf.dbConf.ShowSql {
+	if showSql {
 		log.Println("SQL:", boundSql.sqlStr)
 		log.Println("ParamMappings:", boundSql.paramMappings)
 		log.Println("Params:", paramArr)
 	}
 
-	rows, err := this.gb.db.Query(boundSql.sqlStr, paramArr...)
+	rows, err := exec.tx.Query(boundSql.sqlStr, paramArr...)
 	if nil != err {
 		return err
 	}
 
 	resProc, ok := resSetProcMap[ms.resultType]
 	if !ok {
-		return errors.New("No this result type proc, result type:" + string(ms.resultType))
+		return errors.New("No exec result type proc, result type:" + string(ms.resultType))
 	}
 
 	// func(rows *sql.Rows, res interface{}) error
@@ -75,10 +74,10 @@ func (this *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 	return nil
 }
 
-func paramProc(ms *mappedStmt, params map[string]interface{})(boundSql *boundSql, paramArr []interface{}, err error){
+func paramProc(ms *mappedStmt, params map[string]interface{}) (boundSql *boundSql, paramArr []interface{}, err error) {
 	boundSql = ms.sqlSource.getBoundSql(params)
 	if nil == boundSql {
-		err = errors.New("Get boundSql err: boundSql == nil")
+		err = errors.New("get boundSql err: boundSql == nil")
 		return
 	}
 
@@ -96,4 +95,3 @@ func paramProc(ms *mappedStmt, params map[string]interface{})(boundSql *boundSql
 
 	return
 }
-

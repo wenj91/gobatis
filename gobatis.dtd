@@ -2,41 +2,82 @@
 <!ELEMENT mapper (select*, update*, insert*, delete*)>
 <!ATTLIST mapper namespace>
 
-<!ELEMENT select (if*, foreach*, set*, trim*, where*)>
-<!ATTLIST select id  ID #REQUIRED>
-<!ATTLIST select resultType(struct|structs|map|maps|array|arrays|value) #REQUIRED>
 
-<!ELEMENT update (if*, foreach*, include*, set*)>
-<!ATTLIST update id ID #REQUIRED>
+<!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST select
+        id CDATA #REQUIRED
+        resultType CDATA #IMPLIED
+        >
 
-<!ELEMENT insert (if*, foreach*, include*)>
-<!ATTLIST insert id ID #REQUIRED>
+<!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST insert
+        id CDATA #REQUIRED
+        >
 
-<!ELEMENT delete (if*, foreach*, include*)>
-<!ATTLIST delete id ID #REQUIRED>
 
-<!ELEMENT sql (#PCDATA)>
-<!ATTLIST sql id ID #REQUIRED>
+<!ELEMENT update (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST update
+        id CDATA #REQUIRED
+        >
 
-<!ELEMENT include ()>
-<!ATTLIST include refid(#PCDATA) #REQUIRED>
+<!ELEMENT delete (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST delete
+        id CDATA #REQUIRED
+        >
 
-<!ELEMENT if (foreach*)>
-<!ATTLIST if test(#PCDATA) #REQUIRED>
+<!ELEMENT property EMPTY>
+<!ATTLIST property
+        name CDATA #REQUIRED
+        value CDATA #REQUIRED
+        >
 
-<!ELEMENT set (if*)>
+<!ELEMENT include (property+)?>
+<!ATTLIST include
+        refid CDATA #REQUIRED
+        >
 
-<!ELEMENT where (if*)>
+<!ELEMENT bind EMPTY>
+<!ATTLIST bind
+        name CDATA #REQUIRED
+        value CDATA #REQUIRED
+        >
 
-<!ELEMENT trim (if*)>
-<!ATTLIST trim prefix(#PCDATA)>
-<!ATTLIST trim prefixOverrides(#PCDATA)>
-<!ATTLIST trim suffixOverrides(#PCDATA)>
-<!ATTLIST trim suffix(#PCDATA)>
+<!ELEMENT sql (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST sql
+        id CDATA #REQUIRED
+        lang CDATA #IMPLIED
+        databaseId CDATA #IMPLIED
+        >
 
-<!ELEMENT foreach ()>
-<!ATTLIST foreach collection(#PCDATA) #REQUIRED>
-<!ATTLIST foreach open(#PCDATA)>
-<!ATTLIST foreach close(#PCDATA)>
-<!ATTLIST foreach separator(#PCDATA)>
-<!ATTLIST foreach index(#PCDATA)>
+<!ELEMENT trim (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST trim
+        prefix CDATA #IMPLIED
+        prefixOverrides CDATA #IMPLIED
+        suffix CDATA #IMPLIED
+        suffixOverrides CDATA #IMPLIED
+        >
+<!ELEMENT where (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ELEMENT set (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+
+
+<!ELEMENT foreach (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST foreach
+        collection CDATA #REQUIRED
+        item CDATA #IMPLIED
+        index CDATA #IMPLIED
+        open CDATA #IMPLIED
+        close CDATA #IMPLIED
+        separator CDATA #IMPLIED
+        >
+
+<!ELEMENT choose (when* , otherwise?)>
+<!ELEMENT when (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST when
+        test CDATA #REQUIRED
+        >
+<!ELEMENT otherwise (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+
+<!ELEMENT if (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
+<!ATTLIST if
+        test CDATA #REQUIRED
+        >
