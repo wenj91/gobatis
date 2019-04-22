@@ -243,11 +243,6 @@ func main() {
 
 	gobatis.ConfCodeInit(dbconf)
 
-	if nil == conf {
-		log.Println("db config == nil")
-		return
-	}
-
 	// 获取数据源，参数为数据源名称，如：datasource1
 	gb := gobatis.NewGoBatis("ds1")
 
