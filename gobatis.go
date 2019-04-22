@@ -28,7 +28,7 @@ type GoBatis interface {
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go start
-type Executor interface {
+type dbRunner interface {
 	Prepare(query string) (*sql.Stmt, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
@@ -42,122 +42,199 @@ const (
 	dbTypePostgres DbType = "postgres"
 )
 
-var showSql = false
-
-type Config struct {
-	Db          *sql.DB
-	MapperPaths []string
-}
-
-func NewGoBatis(ctx context.Context, conf *Config) (*Gobatis, error) {
-	if nil == conf.Db {
-		panic("")
+func NewGoBatis(datasource string) *Db {
+	if nil == conf {
+		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
 	}
-	mapper := loadingMapper(conf.MapperPaths...)
 
-	gb := &Gobatis{
-		db:      conf.Db,
-		mappers: mapper,
+	if nil == db {
+		panic(errors.New("Db init err, db == nil!"))
 	}
-	gb.ctxStd, gb.cancel = context.WithCancel(ctx)
-	return gb, nil
+
+	ds, ok := db[datasource]
+	if !ok {
+		panic(errors.New("Datasource:" + datasource + "not exists!"))
+	}
+
+	dbType := conf.dbConf.getDataSourceByName(datasource).DriverName
+	if dbType != "mysql" {
+		panic(errors.New("No support to this driver name!"))
+	}
+
+	gb := &Db{
+		gbBase{
+			db:     ds,
+			dbType: DbType(dbType),
+			config: conf,
+		},
+	}
+
+	return gb
 }
 
-type Runner struct {
-	executor Executor
-	dbType   DbType
-	mappers  *mapper
-	tx       *sql.Tx
+type gbBase struct {
+	db     dbRunner
+	dbType DbType
+	config *config
 }
 
-// Gobatis
-type Gobatis struct {
-	ctxStd  context.Context
-	cancel  context.CancelFunc
-	mappers *mapper
-	db      *sql.DB
+// Db
+type Db struct {
+	gbBase
+}
+
+// Tx
+type Tx struct {
+	gbBase
 }
 
 // Begin Tx
 //
 // ps：
 //  Tx, err := this.Begin()
-func (g *Gobatis) Begin() (*Runner, error) {
-	return g.BeginTx(g.ctxStd, nil)
+func (this *Db) Begin() (*Tx, error) {
+	if nil == this.db {
+		return nil, errors.New("db no opened")
+	}
+
+	sqlDb, ok := this.db.(*sql.DB)
+	if !ok {
+		return nil, errors.New("db no opened")
+	}
+
+	db, err := sqlDb.Begin()
+	if nil != err {
+		return nil, err
+	}
+
+	t := &Tx{
+		gbBase{
+			dbType: this.dbType,
+			config: this.config,
+			db:     db,
+		},
+	}
+	return t, nil
 }
 
 // Begin Tx with ctx & opts
 //
 // ps：
 //  Tx, err := this.BeginTx(ctx, ops)
-func (g *Gobatis) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Runner, error) {
-	tx, err := g.db.BeginTx(ctx, opts)
+func (this *Db) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
+	if nil == this.db {
+		return nil, errors.New("db no opened")
+	}
+
+	sqlDb, ok := this.db.(*sql.DB)
+	if !ok {
+		return nil, errors.New("db no opened")
+	}
+
+	db, err := sqlDb.BeginTx(ctx, opts)
 	if nil != err {
 		return nil, err
 	}
-	return &Runner{
-		mappers: g.mappers,
-		tx:      tx,
-	}, nil
+
+	t := &Tx{
+		gbBase{
+			dbType: this.dbType,
+			config: this.config,
+			db:     db,
+		},
+	}
+	return t, nil
 }
 
 // Close db
 //
 // ps：
 //  err := this.Close()
-func (g *Gobatis) Close() error {
-	g.cancel()
-	return g.db.Close()
+func (this *gbBase) Close() error {
+	if nil == this.db {
+		return errors.New("db no opened")
+	}
+
+	sqlDb, ok := this.db.(*sql.DB)
+	if !ok {
+		return errors.New("db no opened")
+	}
+
+	err := sqlDb.Close()
+	this.db = nil
+	return err
 }
 
 // Commit Tx
 //
 // ps：
 //  err := Tx.Commit()
-func (r *Runner) Commit() error {
-	if nil == r.tx {
-		return errors.New("tx no running")
+func (this *Tx) Commit() error {
+	if nil == this.db {
+		return errors.New("Tx no running")
 	}
-	return r.tx.Commit()
+
+	sqlTx, ok := this.db.(*sql.Tx)
+	if !ok {
+		return errors.New("Tx no running")
+
+	}
+
+	return sqlTx.Commit()
 }
 
 // Rollback Tx
 //
 // ps：
 //  err := Tx.Rollback()
-func (r *Runner) Rollback() error {
-	return r.tx.Rollback()
+func (this *Tx) Rollback() error {
+	if nil == this.db {
+		return errors.New("Tx no running")
+	}
+
+	sqlTx, ok := this.db.(*sql.Tx)
+	if !ok {
+		return errors.New("Tx no running")
+	}
+
+	return sqlTx.Rollback()
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
-func (r *Runner) Select(stmt string, param interface{}) func(res interface{}) error {
-	ms := r.mappers.getMappedStmt(stmt)
+
+func (this *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return func(res interface{}) error {
-			return errors.New("mapped statement not found:" + stmt)
+			return errors.New("Mapped statement not found:" + stmt)
 		}
 	}
-	ms.dbType = r.dbType
+	ms.dbType = this.dbType
 
 	params := paramProcess(param)
 
 	return func(res interface{}) error {
-		executor := &executor{r}
-		return executor.query(ms, params, res)
+		executor := &executor{
+			gb: this,
+		}
+		err := executor.query(ms, params, res)
+		return err
 	}
 }
 
-// insert(Executor string, param interface{})
-func (r *Runner) Insert(stmt string, param interface{}) (int64, int64, error) {
-	ms := r.mappers.getMappedStmt(stmt)
+// insert(stmt string, param interface{})
+func (this *gbBase) Insert(stmt string, param interface{}) (int64, int64, error) {
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, 0, errors.New("Mapped statement not found:" + stmt)
 	}
-	ms.dbType = r.dbType
+	ms.dbType = this.dbType
 
 	params := paramProcess(param)
 
-	executor := &executor{r}
+	executor := &executor{
+		gb: this,
+	}
 
 	lastInsertId, affected, err := executor.update(ms, params)
 	if nil != err {
@@ -167,16 +244,19 @@ func (r *Runner) Insert(stmt string, param interface{}) (int64, int64, error) {
 	return lastInsertId, affected, nil
 }
 
-// update(Executor string, param interface{})
-func (r *Runner) Update(stmt string, param interface{}) (int64, error) {
-	ms := r.mappers.getMappedStmt(stmt)
+// update(stmt string, param interface{})
+func (this *gbBase) Update(stmt string, param interface{}) (int64, error) {
+	ms := this.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
 		return 0, errors.New("Mapped statement not found:" + stmt)
 	}
-	ms.dbType = r.dbType
+	ms.dbType = this.dbType
+
 	params := paramProcess(param)
 
-	executor := &executor{r}
+	executor := &executor{
+		gb: this,
+	}
 
 	_, affected, err := executor.update(ms, params)
 	if nil != err {
@@ -186,7 +266,7 @@ func (r *Runner) Update(stmt string, param interface{}) (int64, error) {
 	return affected, nil
 }
 
-// delete(Executor string, param interface{})
-func (r *Runner) Delete(stmt string, param interface{}) (int64, error) {
-	return r.Update(stmt, param)
+// delete(stmt string, param interface{})
+func (this *gbBase) Delete(stmt string, param interface{}) (int64, error) {
+	return this.Update(stmt, param)
 }

@@ -1,8 +1,9 @@
 package gobatis
 
 import (
-	"github.com/antonmedv/expr"
 	"log"
+
+	"github.com/antonmedv/expr"
 )
 
 func eval(expression string, mapper map[string]interface{}) bool {

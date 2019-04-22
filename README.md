@@ -127,7 +127,9 @@ value: 则数据库查询结果为单个数值
 ```
 
 ## 使用方法
-example.go
+
+###  使用配置文件配置
+example1.go
 ```go
 package main
 
@@ -148,6 +150,103 @@ type User struct {
 func main() {
 	// 初始化db，参数为db.yml路径，如：db.yml
 	gobatis.ConfInit("db.yml")
+
+	// 获取数据源，参数为数据源名称，如：datasource1
+	gb := gobatis.NewGoBatis("ds1")
+
+	//传入id查询Map
+	mapRes := make(map[string]interface{})
+	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
+	// 查询参数可以是map，也可以是数组，也可以是实体结构
+	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
+	fmt.Println("userMapper.findMapById-->", mapRes, err)
+
+	// 根据传入实体查询对象
+	param := User{Id: gobatis.NullInt64{Int64: 1, Valid: true}}
+	var structRes *User
+	err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
+	fmt.Println("userMapper.findStructByStruct-->", structRes, err)
+
+	// 查询实体列表
+	structsRes := make([]*User, 0)
+	err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
+	fmt.Println("userMapper.queryStructs-->", structsRes, err)
+
+	param = User{
+		Id:   gobatis.NullInt64{Int64: 1, Valid: true},
+		Name: gobatis.NullString{String: "wenj1993", Valid: true},
+	}
+
+	// set tag
+	affected, err := gb.Update("userMapper.updateByCond", param)
+	fmt.Println("updateByCond:", affected, err)
+
+	param = User{Name: gobatis.NullString{String: "wenj1993", Valid: true}}
+	// where tag
+	res := make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	fmt.Println("queryStructsByCond", res, err)
+
+	// trim tag
+	res = make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
+	fmt.Println("queryStructsByCond2", res, err)
+	
+	// ${id}
+	res = make([]*User, 0)
+	err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
+		"id":"id",
+	})(&res)
+	fmt.Println("queryStructsByCond", res, err)
+
+	// 开启事务示例
+	tx, _ := gb.Begin()
+	defer tx.Rollback()
+	tx.Select("userMapper.findMapById", map[string]interface{}{"id": 1,})(mapRes)
+	fmt.Println("tx userMapper.findMapById-->", mapRes, err)
+	tx.Commit()
+}
+```
+
+### 代码配置方式
+example2.go
+```go
+package main
+
+import (
+	"fmt"
+	_ "github.com/go-sql-driver/mysql" // 引入驱动
+	"github.com/wenj91/gobatis"        // 引入gobatis
+)
+
+// 实体结构示例， tag：field为数据库对应字段名称
+type User struct {
+	Id    gobatis.NullInt64  `field:"id"`
+	Name  gobatis.NullString `field:"name"`
+	Email gobatis.NullString `field:"email"`
+	CrtTm gobatis.NullTime   `field:"crtTm"`
+}
+
+func main() {
+	// 初始化db，参数为db.yml路径，如：db.yml
+	ds := gobatis.NewDataSource()
+	ds.DataSource = "ds1"
+	ds.DriverName = "mysql"
+	ds.DataSourceName = "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8"
+	ds.MaxLifeTime = 120
+	ds.MaxOpenConns = 10
+	ds.MaxIdleConns = 5
+	dbconf := gobatis.NewDbConfig()
+	dbconf.DB = []*gobatis.DataSource{ds}
+	dbconf.ShowSql = true
+	dbconf.Mappers = []string{"mapper/userMapper.xml"}
+
+	gobatis.ConfCodeInit(dbconf)
+
+	if nil == conf {
+		log.Println("db config == nil")
+		return
+	}
 
 	// 获取数据源，参数为数据源名称，如：datasource1
 	gb := gobatis.NewGoBatis("ds1")

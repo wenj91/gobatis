@@ -6,7 +6,7 @@ import (
 )
 
 type executor struct {
-	*Runner
+	gb *gbBase
 }
 
 func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (lastInsertId int64, affected int64, err error) {
@@ -15,13 +15,13 @@ func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 		return 0, 0, err
 	}
 
-	if showSql {
+	if conf.dbConf.ShowSql {
 		log.Println("SQL:", boundSql.sqlStr)
 		log.Println("ParamMappings:", boundSql.paramMappings)
 		log.Println("Params:", paramArr)
 	}
 
-	stmt, err := exec.tx.Prepare(boundSql.sqlStr)
+	stmt, err := exec.gb.db.Prepare(boundSql.sqlStr)
 	if nil != err {
 		return 0, 0, err
 	}
@@ -49,13 +49,13 @@ func (exec *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 		return err
 	}
 
-	if showSql {
+	if conf.dbConf.ShowSql {
 		log.Println("SQL:", boundSql.sqlStr)
 		log.Println("ParamMappings:", boundSql.paramMappings)
 		log.Println("Params:", paramArr)
 	}
 
-	rows, err := exec.tx.Query(boundSql.sqlStr, paramArr...)
+	rows, err := exec.gb.db.Query(boundSql.sqlStr, paramArr...)
 	if nil != err {
 		return err
 	}

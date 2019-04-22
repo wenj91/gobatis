@@ -176,7 +176,7 @@ func TestSetSqlNode_build(t *testing.T) {
 
 	setSqlNode.build(ctx)
 
-	expc := " set name = #{name} , name2 = #{name2}"
+	expc := " set  name = #{name}  , name2 = #{name2} "
 	assertEqual(ctx.toSql(), expc, "test failed, actual:"+ctx.toSql())
 	assertEqual(ctx.params["name"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name"]))
 	assertEqual(ctx.params["name2"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name2"]))
@@ -211,7 +211,7 @@ func TestTrimSqlNode_build(t *testing.T) {
 
 	trimSqlNode.build(ctx)
 
-	expc := "name = #{name} and name2 = #{name2}"
+	expc := "name = #{name}  and name2 = #{name2} "
 	assertEqual(ctx.toSql(), expc, "test failed, actual:"+ctx.toSql())
 	assertEqual(ctx.params["name"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name"]))
 	assertEqual(ctx.params["name2"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name2"]))
@@ -244,7 +244,7 @@ func TestWhereSqlNode_build(t *testing.T) {
 
 	whereSqlNode.build(ctx)
 
-	expc := " where name = #{name} and name2 = #{name2}"
+	expc := "where name = #{name}  and name2 = #{name2} "
 	assertEqual(ctx.toSql(), expc, "test failed, actual:"+ctx.toSql())
 	assertEqual(ctx.params["name"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name"]))
 	assertEqual(ctx.params["name2"], "wenj91", "test failed, actual:"+fmt.Sprintf("%s", ctx.params["name2"]))
