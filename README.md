@@ -228,7 +228,7 @@ type User struct {
 }
 
 func main() {
-	// 初始化db，参数为db.yml路径，如：db.yml
+	// 初始化db
 	ds := gobatis.NewDataSource()
 	ds.DataSource = "ds1"
 	ds.DriverName = "mysql"
@@ -243,7 +243,7 @@ func main() {
 
 	gobatis.ConfCodeInit(dbconf)
 
-	// 获取数据源，参数为数据源名称，如：datasource1
+	// 获取数据源，参数为数据源名称，如：ds1
 	gb := gobatis.NewGoBatis("ds1")
 
 	//传入id查询Map
