@@ -56,10 +56,15 @@ func NewGoBatis(datasource string) *Db {
 		panic(errors.New("Datasource:" + datasource + "not exists!"))
 	}
 
+	dbType := conf.dbConf.getDataSourceByName(datasource).DriverName
+	if dbType != "mysql" {
+		panic(errors.New("No support to this driver name!"))
+	}
+
 	gb := &Db{
 		gbBase{
 			db:     ds,
-			dbType: DbType(conf.dbConf.getDataSourceByName(datasource).DriverName),
+			dbType: DbType(dbType),
 			config: conf,
 		},
 	}

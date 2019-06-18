@@ -13,8 +13,18 @@ type dynamicContext struct {
 	params map[string]interface{}
 }
 
-func (this *dynamicContext) appendSql(sqlStr string) {
-	this.sqlStr += sqlStr + " "
+func newDynamicContext(params map[string]interface{}) *dynamicContext {
+	return &dynamicContext{
+		params: params,
+	}
+}
+
+func (d *dynamicContext) appendSql(sqlStr string) {
+	d.sqlStr += sqlStr + " "
+}
+
+func (d *dynamicContext) toSql() string {
+	return d.sqlStr
 }
 
 // [ref](http://www.mybatis.org/mybatis-3/dynamic-sql.html)
@@ -27,9 +37,9 @@ type mixedSqlNode struct {
 	sqlNodes []iSqlNode
 }
 
-func (this *mixedSqlNode) build(ctx *dynamicContext) bool {
-	for i := 0; i < len(this.sqlNodes); i++ {
-		sqlNode := this.sqlNodes[i]
+func (m *mixedSqlNode) build(ctx *dynamicContext) bool {
+	for i := 0; i < len(m.sqlNodes); i++ {
+		sqlNode := m.sqlNodes[i]
 		sqlNode.build(ctx)
 	}
 
@@ -42,9 +52,9 @@ type ifSqlNode struct {
 	sqlNode iSqlNode
 }
 
-func (this *ifSqlNode) build(ctx *dynamicContext) bool {
-	if ok := eval(this.test, ctx.params); ok {
-		this.sqlNode.build(ctx)
+func (i *ifSqlNode) build(ctx *dynamicContext) bool {
+	if ok := eval(i.test, ctx.params); ok {
+		i.sqlNode.build(ctx)
 		return true
 	}
 
@@ -56,8 +66,8 @@ type textSqlNode struct {
 	content string
 }
 
-func (this *textSqlNode) build(ctx *dynamicContext) bool {
-	ctx.appendSql(this.content)
+func (t *textSqlNode) build(ctx *dynamicContext) bool {
+	ctx.appendSql(t.content)
 	return true
 }
 
@@ -74,14 +84,14 @@ type foreachSqlNode struct {
 	index      string
 }
 
-func (this *foreachSqlNode) build(ctx *dynamicContext) bool {
-	collection, ok := ctx.params[this.collection]
+func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
+	collection, ok := ctx.params[f.collection]
 	if !ok {
-		log.Println("No collection for foreach tag:", this.collection)
+		log.Println("No collection for foreach tag:", f.collection)
 		return false
 	}
 
-	ctx.appendSql(this.open)
+	ctx.appendSql(f.open)
 
 	val := reflect.ValueOf(collection)
 
@@ -104,35 +114,35 @@ func (this *foreachSqlNode) build(ctx *dynamicContext) bool {
 			log.Println("Foreach tag collection element must not be slice or array")
 			return false
 		case reflect.Struct:
-			m := this.structToMap(v.Interface())
+			m := f.structToMap(v.Interface())
 			for k, v := range m {
-				key := this.item + "." + k
+				key := f.item + "." + k
 				keys = append(keys, key)
 				params[key] = v
 			}
 		case reflect.Map:
 			m := v.Interface().(map[string]interface{})
 			for k, v := range m {
-				key := this.item + "." + k
+				key := f.item + "." + k
 				keys = append(keys, key)
 				params[key] = v
 			}
 		default:
-			keys = append(keys, this.item)
-			params[this.item] = v.Interface()
+			keys = append(keys, f.item)
+			params[f.item] = v.Interface()
 		}
 
-		params[this.item] = v.Interface()
+		params[f.item] = v.Interface()
 
 		tempCtx := &dynamicContext{
 			params: params,
 		}
 
-		this.sqlNode.build(tempCtx)
-		this.tokenHandler(tempCtx, i)
+		f.sqlNode.build(tempCtx)
+		f.tokenHandler(tempCtx, i)
 
 		if i != 0 {
-			ctx.appendSql(this.separator)
+			ctx.appendSql(f.separator)
 		}
 
 		ctx.appendSql(tempCtx.sqlStr)
@@ -147,12 +157,12 @@ func (this *foreachSqlNode) build(ctx *dynamicContext) bool {
 			ctx.params[k] = v
 		}
 	}
-	ctx.appendSql(this.close)
+	ctx.appendSql(f.close)
 
 	return true
 }
 
-func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
+func (f *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 	sqlStr := ctx.sqlStr
 
 	finalSqlStr := ""
@@ -173,8 +183,8 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 			finalSqlStr += sqlStr[:start+1]
 			sqlStr = sqlStr[i+2:]
 
-			var re = regexp.MustCompile("^\\s*" + this.item + "\\s*")
-			itemPrefix := listItemPrefix + this.item + fmt.Sprintf("%d", index)
+			var re = regexp.MustCompile("^\\s*" + f.item + "\\s*")
+			itemPrefix := listItemPrefix + f.item + fmt.Sprintf("%d", index)
 			s := re.ReplaceAllString(itemStr, itemPrefix)
 			s = strings.Trim(s, " ")
 			if strings.Contains(s, itemPrefix) {
@@ -200,7 +210,7 @@ func (this *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 	ctx.sqlStr = finalSqlStr
 }
 
-func (this *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
+func (f *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
 	return structToMap(s)
 }
 
@@ -209,10 +219,10 @@ type setSqlNode struct {
 	sqlNodes []iSqlNode
 }
 
-func (this *setSqlNode) build(ctx *dynamicContext) bool {
+func (s *setSqlNode) build(ctx *dynamicContext) bool {
 
 	sqlStr := ""
-	for _, sqlNode := range this.sqlNodes {
+	for _, sqlNode := range s.sqlNodes {
 		tempCtx := &dynamicContext{
 			params: ctx.params,
 		}
@@ -247,12 +257,12 @@ type trimSqlNode struct {
 	sqlNodes        []iSqlNode
 }
 
-func (this *trimSqlNode) build(ctx *dynamicContext) bool {
+func (t *trimSqlNode) build(ctx *dynamicContext) bool {
 	tempCtx := &dynamicContext{
 		params: ctx.params,
 	}
 
-	for _, sqlNode := range this.sqlNodes {
+	for _, sqlNode := range t.sqlNodes {
 		if tempCtx.sqlStr != "" {
 			tempCtx.sqlStr += " "
 		}
@@ -262,22 +272,22 @@ func (this *trimSqlNode) build(ctx *dynamicContext) bool {
 	if tempCtx.sqlStr != "" {
 		sqlStr := strings.TrimSpace(tempCtx.sqlStr)
 
-		preOv := strings.TrimSpace(this.prefixOverrides)
+		preOv := strings.TrimSpace(t.prefixOverrides)
 		if preOv != "" {
 			sqlStr = strings.TrimPrefix(sqlStr, preOv+" ")
 		}
 
-		suffOv := strings.TrimSpace(this.suffixOverrides)
+		suffOv := strings.TrimSpace(t.suffixOverrides)
 		if suffOv != "" {
 			sqlStr = strings.TrimSuffix(sqlStr, suffOv+" ")
 		}
 
-		pre := strings.TrimSpace(this.prefix)
+		pre := strings.TrimSpace(t.prefix)
 		if pre != "" {
 			sqlStr = pre + " " + sqlStr
 		}
 
-		suff := strings.TrimSpace(this.suffix)
+		suff := strings.TrimSpace(t.suffix)
 		if suff != "" {
 			sqlStr += " " + suff
 		}
@@ -297,12 +307,12 @@ type whereSqlNode struct {
 	sqlNodes []iSqlNode
 }
 
-func (this *whereSqlNode) build(ctx *dynamicContext) bool {
+func (w *whereSqlNode) build(ctx *dynamicContext) bool {
 	tempCtx := &dynamicContext{
 		params: ctx.params,
 	}
 
-	for _, sqlNode := range this.sqlNodes {
+	for _, sqlNode := range w.sqlNodes {
 		if tempCtx.sqlStr != "" {
 			tempCtx.sqlStr += " "
 		}
@@ -316,7 +326,7 @@ func (this *whereSqlNode) build(ctx *dynamicContext) bool {
 		sqlStr = strings.TrimPrefix(sqlStr, "or ")
 		sqlStr = strings.TrimPrefix(sqlStr, "OR ")
 
-		ctx.appendSql(" where ")
+		ctx.appendSql("where")
 		ctx.appendSql(sqlStr)
 	}
 
@@ -328,3 +338,20 @@ func (this *whereSqlNode) build(ctx *dynamicContext) bool {
 }
 
 // choose node
+type chooseNode struct {
+	sqlNodes  []iSqlNode
+	otherwise iSqlNode
+}
+
+func (c *chooseNode) build(ctx *dynamicContext) bool {
+	for _, n := range c.sqlNodes {
+		if n.build(ctx) {
+			return true
+		}
+	}
+	if nil != c.otherwise {
+		c.otherwise.build(ctx)
+		return true
+	}
+	return false
+}

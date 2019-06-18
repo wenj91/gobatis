@@ -1,10 +1,11 @@
 package gobatis
 
 import (
-	"gopkg.in/yaml.v2"
 	"io"
 	"log"
 	"strings"
+
+	"gopkg.in/yaml.v2"
 )
 
 func createSqlNode(elems ...element) []iSqlNode {
@@ -25,7 +26,7 @@ func createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		n := elem.Val.(node)
-		if n.Name == "if" {
+		if n.Name == "if" || n.Name == "when" {
 			sqlNodes := createSqlNode(n.Elements...)
 			ifn := &ifSqlNode{
 				test: n.Attrs["test"].Value,
@@ -39,6 +40,24 @@ func createSqlNode(elems ...element) []iSqlNode {
 			}
 
 			res = append(res, ifn)
+			return res
+		}
+
+		if n.Name == "choose" {
+			sqlNodes := createSqlNode(n.Elements...)
+			csNode := &chooseNode{
+				sqlNodes: sqlNodes,
+			}
+			res = append(res, csNode)
+			return res
+		}
+
+		if n.Name == "otherwise" {
+			sqlNodes := createSqlNode(n.Elements...)
+			owNode := &mixedSqlNode{
+				sqlNodes: sqlNodes,
+			}
+			res = append(res, owNode)
 			return res
 		}
 

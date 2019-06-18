@@ -40,7 +40,7 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 	if nil == this.cache {
 		this.cache = make(map[string]*mappedStmt)
 	}
-	
+
 	if st, ok := this.cache[id]; ok {
 		return st
 	}

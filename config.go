@@ -5,8 +5,8 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"time"
 	"strings"
+	"time"
 )
 
 type config struct {
@@ -17,7 +17,16 @@ type config struct {
 var conf *config
 var db map[string]*sql.DB
 
-func ConfInit(dbConfPath string)  {
+func ConfCodeInit(dbConf *dbConfig) {
+	if nil != conf {
+		log.Println("[WARN] Db config is already init, do not repeat init!")
+		return
+	}
+
+	configInit(dbConf)
+}
+
+func ConfInit(dbConfPath string) {
 	if nil != conf {
 		log.Println("[WARN] Db config is already init, do not repeat init!")
 		return
@@ -26,6 +35,7 @@ func ConfInit(dbConfPath string)  {
 	if dbConfPath == "" {
 		dbConfPath = "db.yml"
 	}
+
 	f, err := os.Open(dbConfPath)
 	if nil != err {
 		log.Fatalln("Open db conf err:", err)
@@ -39,6 +49,10 @@ func ConfInit(dbConfPath string)  {
 	}
 
 	dbConf := buildDbConfig(string(r))
+	configInit(dbConf)
+}
+
+func configInit(dbConf *dbConfig) {
 	if nil == dbConf {
 		log.Fatalln("Build db config err: dbConf == nil")
 		return
@@ -75,7 +89,7 @@ func ConfInit(dbConfPath string)  {
 	dbInit(dbConf)
 }
 
-func dbInit(dbConf *dbConfig)  {
+func dbInit(dbConf *dbConfig) {
 	db = make(map[string]*sql.DB)
 	if len(dbConf.DB) <= 0 {
 		panic("No config for datasource")
@@ -84,19 +98,16 @@ func dbInit(dbConf *dbConfig)  {
 	for _, item := range dbConf.DB {
 		if item.DataSource == "" {
 			panic("Db config err: datasource must not be nil")
-			return
 		}
 
 		item.DataSource = strings.TrimSpace(item.DataSource)
 
 		if item.DriverName == "" {
 			panic("Db config err: driverName must not be nil")
-			return
 		}
 
 		if item.DataSourceName == "" {
 			panic("Db config err: dataSourceName must not be nil")
-			return
 		}
 
 		dbConn, err := sql.Open(item.DriverName, item.DataSourceName)

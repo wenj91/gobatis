@@ -21,12 +21,12 @@ type dynamicSqlSource struct {
 	sqlNode iSqlNode
 }
 
-func (this *dynamicSqlSource) getBoundSql(params map[string]interface{}) *boundSql {
-	ctx := &dynamicContext{params: params}
-	this.sqlNode.build(ctx)
+func (d *dynamicSqlSource) getBoundSql(params map[string]interface{}) *boundSql {
+	ctx := newDynamicContext(params)
+	d.sqlNode.build(ctx)
 
 	sss := staticSqlSource{
-		sqlStr: ctx.sqlStr,
+		sqlStr: ctx.toSql(),
 	}
 
 	bs := sss.getBoundSql(params)
@@ -40,19 +40,19 @@ type staticSqlSource struct {
 	paramMappings []string
 }
 
-func (this *staticSqlSource) getBoundSql(params map[string]interface{}) *boundSql {
-	this.dollarTokenHandler(params)
-	this.tokenHandler(params)
+func (ss *staticSqlSource) getBoundSql(params map[string]interface{}) *boundSql {
+	ss.dollarTokenHandler(params)
+	ss.tokenHandler(params)
 	return &boundSql{
-		sqlStr:        this.sqlStr,
-		paramMappings: this.paramMappings,
+		sqlStr:        ss.sqlStr,
+		paramMappings: ss.paramMappings,
 		params:        params,
 	}
 }
 
 // ${xx}处理
-func (this *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
-	sqlStr := this.sqlStr
+func (ss *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
+	sqlStr := ss.sqlStr
 	if strings.Index(sqlStr, "$") == -1 {
 		return
 	}
@@ -76,7 +76,7 @@ func (this *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 			sqlStr = sqlStr[i+2:]
 
 			itemStr = strings.Trim(itemStr, " ")
-			//this.paramMappings = append(this.paramMappings, itemStr)
+			//ss.paramMappings = append(ss.paramMappings, itemStr)
 
 			item, ok := params[itemStr]
 			if !ok {
@@ -98,12 +98,12 @@ func (this *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 
 	finalSqlStr += sqlStr
 	finalSqlStr = strings.Trim(finalSqlStr, " ")
-	this.sqlStr = finalSqlStr
+	ss.sqlStr = finalSqlStr
 }
 
 // 静态token处理, 将#{xx}预处理为数据库预编译语句
-func (this *staticSqlSource) tokenHandler(params map[string]interface{}) {
-	sqlStr := this.sqlStr
+func (ss *staticSqlSource) tokenHandler(params map[string]interface{}) {
+	sqlStr := ss.sqlStr
 
 	finalSqlStr := ""
 	itemStr := ""
@@ -124,7 +124,7 @@ func (this *staticSqlSource) tokenHandler(params map[string]interface{}) {
 			sqlStr = sqlStr[i+2:]
 
 			itemStr = strings.Trim(itemStr, " ")
-			this.paramMappings = append(this.paramMappings, itemStr)
+			ss.paramMappings = append(ss.paramMappings, itemStr)
 
 			finalSqlStr += "?"
 
@@ -140,5 +140,5 @@ func (this *staticSqlSource) tokenHandler(params map[string]interface{}) {
 
 	finalSqlStr += sqlStr
 	finalSqlStr = strings.Trim(finalSqlStr, " ")
-	this.sqlStr = finalSqlStr
+	ss.sqlStr = finalSqlStr
 }

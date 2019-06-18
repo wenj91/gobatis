@@ -9,11 +9,19 @@ type DataSource struct {
 	MaxIdleConns   int    `yaml:"maxIdleConns"`
 }
 
+func NewDataSource() *DataSource {
+	return &DataSource{}
+}
+
 type dbConfig struct {
 	DB      []*DataSource `yaml:"db"`
 	ShowSql bool          `yaml:"showSql"`
 	Mappers []string      `yaml:"mappers"`
 	dbMap   map[string]*DataSource
+}
+
+func NewDbConfig() *dbConfig {
+	return &dbConfig{}
 }
 
 func (this *dbConfig) getDataSourceByName(datasource string) *DataSource {
