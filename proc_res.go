@@ -190,7 +190,9 @@ func resSliceProc(rows *sql.Rows, res interface{}) error {
 
 	if len(arr) > 0 {
 		tempResSlice := arr[0].([]interface{})
-		value.Set(reflect.AppendSlice(value, reflect.ValueOf(tempResSlice)))
+		for _, v := range tempResSlice {
+			value.Set(reflect.Append(value, reflect.ValueOf(v)))
+		}
 	}
 
 	return nil
