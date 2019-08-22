@@ -161,8 +161,18 @@ func resSlicesProc(rows *sql.Rows, res interface{}) error {
 		return err
 	}
 
-	for i := 0; i < len(arr); i++ {
-		value.Set(reflect.Append(value, reflect.ValueOf(arr[i])))
+	if len(arr) > 0 {
+		for _, item := range arr {
+			// get sub arr type
+			subVal := reflect.Indirect(reflect.New(reflect.TypeOf(res).Elem().Elem()))
+			for _, val := range item.([]interface{}) {
+				// set val to sub arr
+				subVal.Set(reflect.Append(subVal, reflect.ValueOf(val)))
+			}
+
+			// set sub arr to arr
+			value.Set(reflect.Append(value, subVal))
+		}
 	}
 
 	return nil
