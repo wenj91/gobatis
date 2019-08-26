@@ -2,7 +2,6 @@ package gobatis
 
 import (
 	"database/sql"
-	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -10,57 +9,24 @@ import (
 )
 
 type config struct {
-	dbConf     *dbConfig
+	dbConf     *DBConfig
 	mapperConf *mapperConfig
 }
 
 var conf *config
-var db map[string]*sql.DB
+var db map[string]*GoBatisDB
 
-func ConfCodeInit(dbConf *dbConfig) {
-	if nil != conf {
-		log.Println("[WARN] Db config is already init, do not repeat init!")
-		return
-	}
-
-	configInit(dbConf)
+func Init(option IOption) {
+	configInit(option.ToDBConf())
 }
 
-func ConfInit(dbConfPath string) {
-	if nil != conf {
-		log.Println("[WARN] Db config is already init, do not repeat init!")
-		return
-	}
-
-	if dbConfPath == "" {
-		dbConfPath = "db.yml"
-	}
-
-	f, err := os.Open(dbConfPath)
-	if nil != err {
-		log.Fatalln("Open db conf err:", err)
-		return
-	}
-
-	r, err := ioutil.ReadAll(f)
-	if nil != err {
-		log.Fatalln("Read db conf err:", err)
-		return
-	}
-
-	dbConf := buildDbConfig(string(r))
-	configInit(dbConf)
-}
-
-func configInit(dbConf *dbConfig) {
+func configInit(dbConf *DBConfig) {
 	if nil == dbConf {
-		log.Fatalln("Build db config err: dbConf == nil")
-		return
+		panic("Build db config err: dbConf == nil")
 	}
 
-	if len(dbConf.DB) <= 0 {
-		log.Fatalln("No datasource config")
-		return
+	if len(dbConf.DB) <= 0 && dbConf.db == nil {
+		panic("No datasource config")
 	}
 
 	mapperConf := &mapperConfig{
@@ -69,8 +35,7 @@ func configInit(dbConf *dbConfig) {
 	for _, item := range dbConf.Mappers {
 		f, err := os.Open(item)
 		if nil != err {
-			log.Fatalln("Open mapper config:", item, "err:", err)
-			return
+			panic("Open mapper config: " + item + " err:" + err.Error())
 		}
 
 		log.Println("mapper config:", item, "init...")
@@ -89,35 +54,38 @@ func configInit(dbConf *dbConfig) {
 	dbInit(dbConf)
 }
 
-func dbInit(dbConf *dbConfig) {
-	db = make(map[string]*sql.DB)
-	if len(dbConf.DB) <= 0 {
+func dbInit(dbConf *DBConfig) {
+	db = make(map[string]*GoBatisDB)
+	if len(dbConf.DB) <= 0 && dbConf.db == nil {
 		panic("No config for datasource")
 	}
 
 	for _, item := range dbConf.DB {
 		if item.DataSource == "" {
-			panic("Db config err: datasource must not be nil")
+			panic("DB config err: datasource must not be nil")
 		}
 
 		item.DataSource = strings.TrimSpace(item.DataSource)
 
+		_, ok := db[item.DataSource]
+		if ok {
+			panic("DB config datasource name repeat:" + item.DataSource)
+		}
+
 		if item.DriverName == "" {
-			panic("Db config err: driverName must not be nil")
+			panic("DB config err: driverName must not be nil")
 		}
 
 		if item.DataSourceName == "" {
-			panic("Db config err: dataSourceName must not be nil")
+			panic("DB config err: dataSourceName must not be nil")
 		}
 
 		dbConn, err := sql.Open(item.DriverName, item.DataSourceName)
 		if nil != err {
-			log.Println(err)
 			panic(err)
 		}
 
 		if err := dbConn.Ping(); err != nil {
-			log.Println(err)
 			panic(err)
 		}
 
@@ -139,6 +107,17 @@ func dbInit(dbConf *dbConfig) {
 			dbConn.SetMaxIdleConns(item.MaxIdleConns)
 		}
 
-		db[item.DataSource] = dbConn
+		d := NewGoBatisDB(DBType(item.DriverName), dbConn)
+		db[item.DataSource] = d
+	}
+
+	if dbConf.db != nil {
+		for k, v := range dbConf.db {
+			_, ok := db[k]
+			if ok {
+				panic("DB config datasource name repeat:" + k)
+			}
+			db[k] = v
+		}
 	}
 }

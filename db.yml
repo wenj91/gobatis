@@ -5,6 +5,6 @@ db:
     maxLifeTime: 120
     maxOpenConns: 10
     maxIdleConns: 5
-showSql: true
+showSQL: true
 mappers:
   - examples/mapper/userMapper.xml

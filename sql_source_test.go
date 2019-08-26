@@ -93,7 +93,7 @@ func TestDynamicSqlSource_getBoundSql(t *testing.T) {
 
 	bs := ds.getBoundSql(params)
 
-	expc := "select 1 from t_gap   where  age = ?  and name = ?  and code = 'cctv' and id in ( ?  , ?  , ?  )"
+	expc := "select 1 from t_gap  where age = ?  and name = ?  and code = 'cctv' and id in ( ?  , ?  , ?  )"
 	assertEqual(bs.sqlStr, expc, "test failed, actual:"+bs.sqlStr)
 	assertEqual(bs.params["name"], "Sean", "test failed, actual:"+fmt.Sprintf("%d", bs.params["id"]))
 	assertEqual(bs.extParams["_ls_item_p_item0.A"], "aa", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item0.A"]))
