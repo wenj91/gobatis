@@ -232,20 +232,20 @@ type User struct {
 func main() {
 	// 初始化db
 	ds1 := gobatis.NewDataSourceBuilder().
-    		DataSource("ds1").
-    		DriverName("mysql").
-    		DataSourceName("root:123456@tcp(127.0.0.1:3306)/test?charset=utf8").
-    		MaxLifeTime(120).
-    		MaxOpenConns(10).
-    		MaxIdleConns(5).
-    		Build()
-    
-    option := gobatis.NewDSOption().
-        DS([]*gobatis.DataSource{ds1}).
-        Mappers([]string{"examples/mapper/userMapper.xml"}).
-        ShowSQL(true)
-    
-    gobatis.Init(option)
+		DataSource("ds1").
+		DriverName("mysql").
+		DataSourceName("root:123456@tcp(127.0.0.1:3306)/test?charset=utf8").
+		MaxLifeTime(120).
+		MaxOpenConns(10).
+		MaxIdleConns(5).
+		Build()
+
+	option := gobatis.NewDSOption().
+		DS([]*gobatis.DataSource{ds1}).
+		Mappers([]string{"examples/mapper/userMapper.xml"}).
+		ShowSQL(true)
+
+	gobatis.Init(option)
 
 	// 获取数据源，参数为数据源名称，如：ds1
 	gb := gobatis.NewGoBatis("ds1")
@@ -265,10 +265,10 @@ example3.go
 package main
 
 import (
+	"database/sql"
 	"fmt"
 	_ "github.com/go-sql-driver/mysql" // 引入驱动
 	"github.com/wenj91/gobatis"        // 引入gobatis
-	"database/sql"
 )
 
 // 实体结构示例， tag：field为数据库对应字段名称
@@ -282,16 +282,15 @@ type User struct {
 func main() {
 	// 初始化db
 	db, _ := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8")
-    dbs := make(map[string]*gobatis.GoBatisDB)
-    dbs["ds1"] = gobatis.NewGoBatisDB(gobatis.DBTypeMySQL, db)
+	dbs := make(map[string]*gobatis.GoBatisDB)
+	dbs["ds1"] = gobatis.NewGoBatisDB(gobatis.DBTypeMySQL, db)
 
-    option := gobatis.NewDBOption().
-        DB(dbs).
-        ShowSQL(true).
-        Mappers([]string{"examples/mapper/userMapper.xml"})
-    gobatis.Init(option)
-    
-    gobatis.Init(option)
+	option := gobatis.NewDBOption().
+		DB(dbs).
+		ShowSQL(true).
+		Mappers([]string{"examples/mapper/userMapper.xml"})
+
+	gobatis.Init(option)
 
 	// 获取数据源，参数为数据源名称，如：ds1
 	gb := gobatis.NewGoBatis("ds1")
