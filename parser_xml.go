@@ -3,7 +3,6 @@ package gobatis
 import (
 	"encoding/xml"
 	"io"
-	"log"
 	"strings"
 )
 
@@ -103,9 +102,8 @@ func parse(r io.Reader) *node {
 	}
 
 	if st.Len() != 0 {
-		log.Fatalln("Parse xml error, there is tag no close, please check your xml config!")
+		panic("Parse xml error, there is tag no close, please check your xml config!")
 	}
 
 	return &root
 }
-

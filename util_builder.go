@@ -240,11 +240,11 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 	return conf
 }
 
-func buildDbConfig(ymlStr string) *dbConfig {
-	dbconf := &dbConfig{}
+func buildDbConfig(ymlStr string) *DBConfig {
+	dbconf := &DBConfig{}
 	err := yaml.Unmarshal([]byte(ymlStr), &dbconf)
 	if err != nil {
-		log.Fatalf("error: %v", err)
+		panic("error: " + err.Error())
 	}
 
 	return dbconf

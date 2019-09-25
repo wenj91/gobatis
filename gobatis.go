@@ -35,36 +35,29 @@ type dbRunner interface {
 	QueryRow(query string, args ...interface{}) *sql.Row
 }
 
-type DbType string
-
-const (
-	dbTypeMySQL    DbType = "mysql"
-	dbTypePostgres DbType = "postgres"
-)
-
-func NewGoBatis(datasource string) *Db {
+func NewGoBatis(datasource string) *DB {
 	if nil == conf {
-		panic(errors.New("Db config no init, please invoke Db.ConfInit() to init db config!"))
+		panic(errors.New("DB config no init, please invoke DB.ConfInit() to init db config!"))
 	}
 
 	if nil == db {
-		panic(errors.New("Db init err, db == nil!"))
+		panic(errors.New("DB init err, db == nil!"))
 	}
 
 	ds, ok := db[datasource]
 	if !ok {
-		panic(errors.New("Datasource:" + datasource + "not exists!"))
+		panic(errors.New("Datasource:" + datasource + " not exists!"))
 	}
 
-	dbType := conf.dbConf.getDataSourceByName(datasource).DriverName
-	if dbType != "mysql" {
+	dbType := ds.dbType
+	if dbType != DBTypeMySQL {
 		panic(errors.New("No support to this driver name!"))
 	}
 
-	gb := &Db{
+	gb := &DB{
 		gbBase{
-			db:     ds,
-			dbType: DbType(dbType),
+			db:     ds.db,
+			dbType: ds.dbType,
 			config: conf,
 		},
 	}
@@ -74,25 +67,25 @@ func NewGoBatis(datasource string) *Db {
 
 type gbBase struct {
 	db     dbRunner
-	dbType DbType
+	dbType DBType
 	config *config
 }
 
-// Db
-type Db struct {
+// DB
+type DB struct {
 	gbBase
 }
 
-// Tx
-type Tx struct {
+// TX
+type TX struct {
 	gbBase
 }
 
-// Begin Tx
+// Begin TX
 //
 // ps：
-//  Tx, err := this.Begin()
-func (this *Db) Begin() (*Tx, error) {
+//  TX, err := this.Begin()
+func (this *DB) Begin() (*TX, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -107,7 +100,7 @@ func (this *Db) Begin() (*Tx, error) {
 		return nil, err
 	}
 
-	t := &Tx{
+	t := &TX{
 		gbBase{
 			dbType: this.dbType,
 			config: this.config,
@@ -117,11 +110,11 @@ func (this *Db) Begin() (*Tx, error) {
 	return t, nil
 }
 
-// Begin Tx with ctx & opts
+// Begin TX with ctx & opts
 //
 // ps：
-//  Tx, err := this.BeginTx(ctx, ops)
-func (this *Db) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
+//  TX, err := this.BeginTx(ctx, ops)
+func (this *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*TX, error) {
 	if nil == this.db {
 		return nil, errors.New("db no opened")
 	}
@@ -136,7 +129,7 @@ func (this *Db) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) {
 		return nil, err
 	}
 
-	t := &Tx{
+	t := &TX{
 		gbBase{
 			dbType: this.dbType,
 			config: this.config,
@@ -165,36 +158,36 @@ func (this *gbBase) Close() error {
 	return err
 }
 
-// Commit Tx
+// Commit TX
 //
 // ps：
-//  err := Tx.Commit()
-func (this *Tx) Commit() error {
+//  err := TX.Commit()
+func (this *TX) Commit() error {
 	if nil == this.db {
-		return errors.New("Tx no running")
+		return errors.New("TX no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		return errors.New("Tx no running")
+		return errors.New("TX no running")
 
 	}
 
 	return sqlTx.Commit()
 }
 
-// Rollback Tx
+// Rollback TX
 //
 // ps：
-//  err := Tx.Rollback()
-func (this *Tx) Rollback() error {
+//  err := TX.Rollback()
+func (this *TX) Rollback() error {
 	if nil == this.db {
-		return errors.New("Tx no running")
+		return errors.New("TX no running")
 	}
 
 	sqlTx, ok := this.db.(*sql.Tx)
 	if !ok {
-		return errors.New("Tx no running")
+		return errors.New("TX no running")
 	}
 
 	return sqlTx.Rollback()

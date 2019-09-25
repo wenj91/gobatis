@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"database/sql"
 	"fmt"
 	"log"
 	"testing"
@@ -17,13 +18,13 @@ type TUser struct {
 }
 
 func TestGoBatis(t *testing.T) {
-	ConfInit("")
+	Init(NewFileOption())
 	if nil == conf {
 		log.Println("db config == nil")
 		return
 	}
 
-	gb := NewGoBatis("datasource1")
+	gb := NewGoBatis("ds")
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)
@@ -80,20 +81,47 @@ func TestGoBatis(t *testing.T) {
 	fmt.Println("delete affected:", affected, "err:", err)
 }
 
-func TestGoBatisWithCodeConf(t *testing.T) {
-	ds := NewDataSource()
-	ds.DataSource = "ds1"
-	ds.DriverName = "mysql"
-	ds.DataSourceName = "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8"
-	ds.MaxLifeTime = 120
-	ds.MaxOpenConns = 10
-	ds.MaxIdleConns = 5
-	dbconf := NewDbConfig()
-	dbconf.DB = []*DataSource{ds}
-	dbconf.ShowSql = true
-	dbconf.Mappers = []string{"examples/mapper/userMapper.xml"}
+func TestGoBatisWithDB(t *testing.T) {
+	db, _ := sql.Open("mysql", "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8")
+	dbs := make(map[string]*GoBatisDB)
+	dbs["ds"] = NewGoBatisDB(DBTypeMySQL, db)
 
-	ConfCodeInit(dbconf)
+	option := NewDBOption().
+		DB(dbs).
+		ShowSQL(true).
+		Mappers([]string{"examples/mapper/userMapper.xml"})
+	Init(option)
+
+	if nil == conf {
+		log.Println("db config == nil")
+		return
+	}
+
+	gb := NewGoBatis("ds")
+
+	var result *TUser
+	err := gb.Select("userMapper.findById", map[string]interface{}{
+		"id": 2,
+	})(&result)
+
+	fmt.Println("result:", result, "err:", err)
+}
+
+func TestGoBatisWithCodeConf(t *testing.T) {
+	ds1 := NewDataSourceBuilder().
+		DataSource("ds1").
+		DriverName("mysql").
+		DataSourceName("root:123456@tcp(127.0.0.1:3306)/test?charset=utf8").
+		MaxLifeTime(120).
+		MaxOpenConns(10).
+		MaxIdleConns(5).
+		Build()
+
+	option := NewDSOption().
+		DS([]*DataSource{ds1}).
+		Mappers([]string{"examples/mapper/userMapper.xml"}).
+		ShowSQL(true)
+	Init(option)
 
 	if nil == conf {
 		log.Println("db config == nil")

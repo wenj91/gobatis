@@ -4,10 +4,9 @@
 
 
 <!ELEMENT select (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
-<!ATTLIST select
-        id CDATA #REQUIRED
-        resultType CDATA #IMPLIED
-        >
+<!ATTLIST select id  ID #REQUIRED>
+<!ATTLIST select resultType(struct|structs|map|maps|array|arrays|value) #REQUIRED>
+
 
 <!ELEMENT insert (#PCDATA | include | trim | where | set | foreach | choose | if | bind)*>
 <!ATTLIST insert

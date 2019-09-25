@@ -20,7 +20,7 @@ db:
     maxLifeTime: 120
     maxOpenConns: 10
     maxIdleConns: 5
-showSql: true
+showSQL: true
 mappers:
   - userMapper.xml
   - orderMapper.xml
@@ -29,7 +29,7 @@ mappers:
 
 	dbc := dbconf.getDataSourceByName("ds1")
 	assertTrue(dbc != nil, "test fail: No datasource1")
-	assertTrue(dbconf.ShowSql, "test fail: showSql == false")
+	assertTrue(dbconf.ShowSQL, "test fail: showSql == false")
 	assertEqual(dbc.DriverName, "mysql", "test fail, actual:"+dbc.DriverName)
 	assertEqual(dbc.DataSourceName, "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", "test fail, actual:"+dbc.DataSourceName)
 	assertEqual(dbc.MaxLifeTime, 120, "test fail, actual:"+fmt.Sprintf("%d", dbc.MaxLifeTime))
@@ -41,21 +41,24 @@ mappers:
 }
 
 func TestDbConfigCodeInit(t *testing.T) {
-	ds := NewDataSource()
-	ds.DataSource = "ds1"
-	ds.DriverName = "mysql"
-	ds.DataSourceName = "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8"
-	ds.MaxLifeTime = 120
-	ds.MaxOpenConns = 10
-	ds.MaxIdleConns = 5
-	dbconf := NewDbConfig()
-	dbconf.DB = []*DataSource{ds}
-	dbconf.ShowSql = true
-	dbconf.Mappers = []string{"userMapper.xml", "orderMapper.xml"}
+	ds1 := NewDataSourceBuilder().
+		DataSource("ds1").
+		DriverName("mysql").
+		DataSourceName("root:123456@tcp(127.0.0.1:3306)/test?charset=utf8").
+		MaxLifeTime(120).
+		MaxOpenConns(10).
+		MaxIdleConns(5).
+		Build()
+
+	dbconf := NewDBConfigBuilder().
+		DS([]*DataSource{ds1}).
+		ShowSQL(true).
+		Mappers([]string{"userMapper.xml", "orderMapper.xml"}).
+		Build()
 
 	dbc := dbconf.getDataSourceByName("ds1")
 	assertTrue(dbc != nil, "test fail: No datasource1")
-	assertTrue(dbconf.ShowSql, "test fail: showSql == false")
+	assertTrue(dbconf.ShowSQL, "test fail: showSql == false")
 	assertEqual(dbc.DriverName, "mysql", "test fail, actual:"+dbc.DriverName)
 	assertEqual(dbc.DataSourceName, "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8", "test fail, actual:"+dbc.DataSourceName)
 	assertEqual(dbc.MaxLifeTime, 120, "test fail, actual:"+fmt.Sprintf("%d", dbc.MaxLifeTime))
