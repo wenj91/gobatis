@@ -24,7 +24,7 @@ func TestGoBatis(t *testing.T) {
 		return
 	}
 
-	gb := NewGoBatis("ds")
+	gb := Get("ds")
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)
@@ -97,7 +97,7 @@ func TestGoBatisWithDB(t *testing.T) {
 		return
 	}
 
-	gb := NewGoBatis("ds")
+	gb := Get("ds")
 
 	var result *TUser
 	err := gb.Select("userMapper.findById", map[string]interface{}{
@@ -128,7 +128,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 		return
 	}
 
-	gb := NewGoBatis("ds1")
+	gb := Get("ds1")
 
 	//result := make(map[string]interface{})
 	//result := make([]interface{}, 0)
