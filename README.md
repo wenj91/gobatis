@@ -152,7 +152,7 @@ func main() {
 	gobatis.Init(gobatis.NewFileOption("db.yml"))
 
 	// 获取数据源，参数为数据源名称，如：datasource1
-	gb := gobatis.NewGoBatis("ds1")
+	gb := gobatis.Get("ds1")
 
 	//传入id查询Map
 	mapRes := make(map[string]interface{})
@@ -248,7 +248,7 @@ func main() {
 	gobatis.Init(option)
 
 	// 获取数据源，参数为数据源名称，如：ds1
-	gb := gobatis.NewGoBatis("ds1")
+	gb := gobatis.Get("ds1")
 
 	//传入id查询Map
 	mapRes := make(map[string]interface{})
@@ -293,7 +293,7 @@ func main() {
 	gobatis.Init(option)
 
 	// 获取数据源，参数为数据源名称，如：ds1
-	gb := gobatis.NewGoBatis("ds1")
+	gb := gobatis.Get("ds1")
 
 	//传入id查询Map
 	mapRes := make(map[string]interface{})
