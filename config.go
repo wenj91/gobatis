@@ -2,7 +2,6 @@ package gobatis
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"strings"
 	"time"
@@ -38,7 +37,7 @@ func configInit(dbConf *DBConfig) {
 			panic("Open mapper config: " + item + " err:" + err.Error())
 		}
 
-		log.Println("mapper config:", item, "init...")
+		LOG.Info("mapper config:%s %s", item, "init...")
 		mc := buildMapperConfig(f)
 		for k, ms := range mc.mappedStmts {
 			mapperConf.put(k, ms)

@@ -2,7 +2,6 @@ package gobatis
 
 import (
 	"io"
-	"log"
 	"strings"
 
 	"gopkg.in/yaml.v2"
@@ -82,7 +81,8 @@ func createSqlNode(elems ...element) []iSqlNode {
 
 			itemAttr, ok := n.Attrs["item"]
 			if !ok {
-				log.Fatalln("No attr:`item` for tag:", n.Name)
+				LOG.Error("No attr:`item` for tag:%s", n.Name)
+				panic("No attr:`item` for tag:" + n.Name)
 			}
 			item := itemAttr.Value
 
@@ -94,7 +94,8 @@ func createSqlNode(elems ...element) []iSqlNode {
 
 			collectionAttr, ok := n.Attrs["collection"]
 			if !ok {
-				log.Fatalln("No attr:`collection` for tag:", n.Name)
+				LOG.Error("No attr:`collection` for tag:%s", n.Name)
+				panic("No attr:`collection` for tag:" + n.Name)
 			}
 			collection := collectionAttr.Value
 
@@ -178,7 +179,8 @@ func createSqlNode(elems ...element) []iSqlNode {
 			return res
 		}
 
-		log.Fatalln("The tag:", n.Name, "not support, current version only support tag:<if> | <foreach>")
+		LOG.Error("The tag:" + n.Name + "not support, current version only support tag:<if> | <foreach>")
+		panic("The tag:" + n.Name + "not support, current version only support tag:<if> | <foreach>")
 	}
 
 	for _, elem := range elems {
@@ -198,7 +200,8 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 	}
 
 	if rootNode.Name != "mapper" {
-		log.Fatalln("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
+		LOG.Error("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
+		panic("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
 	}
 
 	namespace := ""
@@ -216,22 +219,26 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 			switch childNode.Name {
 			case "select", "update", "insert", "delete":
 				if childNode.Id == "" {
-					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml mapperConfig!")
+					LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
+					panic("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 				}
 
 				fid := namespace + childNode.Id
 				if ok := conf.put(fid, &childNode); !ok {
-					log.Fatalln("Repeat id for:", fid, "Please check your xml mapperConfig!")
+					LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
+					panic("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 				}
 
 			case "sql":
 				if childNode.Id == "" {
-					log.Fatalln("No id for:", childNode.Name, "Id must be not null, please check your xml mapperConfig!")
+					LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
+					panic("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 				}
 
 				fid := namespace + childNode.Id
 				if ok := conf.put(fid, &childNode); !ok {
-					log.Fatalln("Repeat id for:", fid, "Please check your xml mapperConfig!")
+					LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
+					panic("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 				}
 			}
 		}

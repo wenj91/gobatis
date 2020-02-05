@@ -1,7 +1,6 @@
 package gobatis
 
 import (
-	"log"
 	"sync"
 )
 
@@ -50,14 +49,14 @@ func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
 
 	rootNode, ok := this.mappedStmts[id]
 	if !ok {
-		log.Fatalln("Can not find id:", id, "mapped stmt")
+		panic("Can not find id:" + id + "mapped stmt")
 	}
 
 	resultType := ""
 	if rootNode.Name == "select" {
 		resultTypeAttr, ok := rootNode.Attrs["resultType"]
 		if !ok {
-			log.Fatalln("Tag `<select>` must have resultType attr!")
+			panic("Tag `<select>` must have resultType attr!")
 		}
 
 		resultType = resultTypeAttr.Value
