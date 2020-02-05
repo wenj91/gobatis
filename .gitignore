@@ -18,3 +18,4 @@
 pkg/
 /src/
 /.vscode
+/*.code-workspace

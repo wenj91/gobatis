@@ -8,6 +8,8 @@ import (
 
 type ResultType string
 
+var LOG ILogger = defLog
+
 const (
 	resultTypeMap     ResultType = "map"     // result set is a map: map[string]interface{}
 	resultTypeMaps    ResultType = "maps"    // result set is a slice, item is map: []map[string]interface{}
@@ -22,17 +24,25 @@ const (
 
 type GoBatis interface {
 	Select(stmt string, param interface{}) func(res interface{}) error
+	SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error
 	Insert(stmt string, param interface{}) (int64, int64, error)
+	InsertContext(ctx context.Context, stmt string, param interface{}) (int64, int64, error)
 	Update(stmt string, param interface{}) (int64, error)
+	UpdateContext(ctx context.Context, stmt string, param interface{}) (int64, error)
 	Delete(stmt string, param interface{}) (int64, error)
+	DeleteContext(ctx context.Context, stmt string, param interface{}) (int64, error)
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go start
 type dbRunner interface {
 	Prepare(query string) (*sql.Stmt, error)
+	PrepareContext(ctx context.Context, query string) (*sql.Stmt, error)
 	Exec(query string, args ...interface{}) (sql.Result, error)
+	ExecContext(ctx context.Context, query string, args ...interface{}) (sql.Result, error)
 	Query(query string, args ...interface{}) (*sql.Rows, error)
+	QueryContext(ctx context.Context, query string, args ...interface{}) (*sql.Rows, error)
 	QueryRow(query string, args ...interface{}) *sql.Row
+	QueryRowContext(ctx context.Context, query string, args ...interface{}) *sql.Row
 }
 
 func Get(datasource string) *DB {
@@ -65,6 +75,10 @@ func Get(datasource string) *DB {
 	return gb
 }
 
+func SetLogger(log ILogger) {
+	LOG = log
+}
+
 type gbBase struct {
 	db     dbRunner
 	dbType DBType
@@ -76,10 +90,14 @@ type DB struct {
 	gbBase
 }
 
+var _ GoBatis = &DB{}
+
 // TX
 type TX struct {
 	gbBase
 }
+
+var _ GoBatis = &TX{}
 
 // Begin TX
 //
@@ -194,7 +212,6 @@ func (t *TX) Rollback() error {
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
-
 func (g *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
 	ms := g.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
@@ -215,6 +232,26 @@ func (g *gbBase) Select(stmt string, param interface{}) func(res interface{}) er
 	}
 }
 
+func (g *gbBase) SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error {
+	ms := g.config.mapperConf.getMappedStmt(stmt)
+	if nil == ms {
+		return func(res interface{}) error {
+			return errors.New("Mapped statement not found:" + stmt)
+		}
+	}
+	ms.dbType = g.dbType
+
+	params := paramProcess(param)
+
+	return func(res interface{}) error {
+		executor := &executor{
+			gb: g,
+		}
+		err := executor.queryContext(ctx, ms, params, res)
+		return err
+	}
+}
+
 // insert(stmt string, param interface{})
 func (g *gbBase) Insert(stmt string, param interface{}) (int64, int64, error) {
 	ms := g.config.mapperConf.getMappedStmt(stmt)
@@ -230,6 +267,27 @@ func (g *gbBase) Insert(stmt string, param interface{}) (int64, int64, error) {
 	}
 
 	lastInsertId, affected, err := executor.update(ms, params)
+	if nil != err {
+		return 0, 0, err
+	}
+
+	return lastInsertId, affected, nil
+}
+
+func (g *gbBase) InsertContext(ctx context.Context, stmt string, param interface{}) (int64, int64, error) {
+	ms := g.config.mapperConf.getMappedStmt(stmt)
+	if nil == ms {
+		return 0, 0, errors.New("Mapped statement not found:" + stmt)
+	}
+	ms.dbType = g.dbType
+
+	params := paramProcess(param)
+
+	executor := &executor{
+		gb: g,
+	}
+
+	lastInsertId, affected, err := executor.updateContext(ctx, ms, params)
 	if nil != err {
 		return 0, 0, err
 	}
@@ -259,7 +317,32 @@ func (g *gbBase) Update(stmt string, param interface{}) (int64, error) {
 	return affected, nil
 }
 
+func (g *gbBase) UpdateContext(ctx context.Context, stmt string, param interface{}) (int64, error) {
+	ms := g.config.mapperConf.getMappedStmt(stmt)
+	if nil == ms {
+		return 0, errors.New("Mapped statement not found:" + stmt)
+	}
+	ms.dbType = g.dbType
+
+	params := paramProcess(param)
+
+	executor := &executor{
+		gb: g,
+	}
+
+	_, affected, err := executor.updateContext(ctx, ms, params)
+	if nil != err {
+		return 0, err
+	}
+
+	return affected, nil
+}
+
 // delete(stmt string, param interface{})
 func (g *gbBase) Delete(stmt string, param interface{}) (int64, error) {
 	return g.Update(stmt, param)
+}
+
+func (g *gbBase) DeleteContext(ctx context.Context, stmt string, param interface{}) (int64, error) {
+	return g.UpdateContext(ctx, stmt, param)
 }

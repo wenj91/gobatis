@@ -1,7 +1,6 @@
 package gobatis
 
 import (
-	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -18,11 +17,11 @@ func paramProcess(param interface{}) map[string]interface{} {
 		v = v.Elem()
 	}
 
-	res := make(map[string]interface{} )
+	res := make(map[string]interface{})
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		log.Println("Foreach tag collection element must not be slice or array")
-		res  = listToMap(param)
+		LOG.Warn("Foreach tag collection element must not be slice or array")
+		res = listToMap(param)
 	case reflect.Struct:
 		res = structToMap(param)
 	case reflect.Map:
@@ -122,11 +121,11 @@ func structToMap(s interface{}) map[string]interface{} {
 		}
 	default:
 		objType := objVal.Type()
-		for i:=0; i<objVal.NumField(); i++ {
+		for i := 0; i < objVal.NumField(); i++ {
 			fieldVal := objVal.Field(i)
 			if fieldVal.CanInterface() {
 				field := objType.Field(i)
-				res[field.Name]= fieldToVal(fieldVal.Interface())
+				res[field.Name] = fieldToVal(fieldVal.Interface())
 			}
 		}
 	}

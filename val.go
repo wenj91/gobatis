@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"log"
 	"reflect"
 	"strconv"
 	"time"
@@ -171,7 +170,7 @@ func valToString(data interface{}) string {
 	case reflect.Complex128:
 		s = fmt.Sprint(data.(complex128))
 	default:
-		log.Println("[WARN]no process for type:" + tp.Name())
+		LOG.Warn("[WARN]no process for type:" + tp.Name())
 	}
 	return s
 }
@@ -621,7 +620,7 @@ func valUpcast(data interface{}, typeName string) interface{} {
 func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interface{} {
 	defer func() {
 		if err := recover(); nil != err {
-			log.Println("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
+			LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
 		}
 	}()
 

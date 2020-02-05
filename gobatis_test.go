@@ -1,9 +1,9 @@
 package gobatis
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -20,7 +20,7 @@ type TUser struct {
 func TestGoBatis(t *testing.T) {
 	Init(NewFileOption())
 	if nil == conf {
-		log.Println("db config == nil")
+		LOG.Error("db config == nil")
 		return
 	}
 
@@ -93,7 +93,7 @@ func TestGoBatisWithDB(t *testing.T) {
 	Init(option)
 
 	if nil == conf {
-		log.Println("db config == nil")
+		LOG.Info("db config == nil")
 		return
 	}
 
@@ -105,6 +105,12 @@ func TestGoBatisWithDB(t *testing.T) {
 	})(&result)
 
 	fmt.Println("result:", result, "err:", err)
+
+	var result2 *TUser
+	err = gb.SelectContext(context.Background(), "userMapper.findById", map[string]interface{}{
+		"id": 4,
+	})(&result2)
+	fmt.Println("result:", result2, "err:", err)
 }
 
 func TestGoBatisWithCodeConf(t *testing.T) {
@@ -124,7 +130,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 	Init(option)
 
 	if nil == conf {
-		log.Println("db config == nil")
+		LOG.Error("db config == nil")
 		return
 	}
 

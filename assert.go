@@ -2,7 +2,6 @@ package gobatis
 
 import (
 	"fmt"
-	"log"
 )
 
 func assertEqual(a interface{}, b interface{}, message string) {
@@ -10,7 +9,7 @@ func assertEqual(a interface{}, b interface{}, message string) {
 		if message == "" {
 			message = fmt.Sprintf("%v != %v", a, b)
 		}
-		log.Fatal(message)
+		panic(message)
 	}
 }
 
@@ -19,7 +18,7 @@ func assertNotNil(a interface{}, message string) {
 		if message == "" {
 			message = fmt.Sprintf("%v == nil", a)
 		}
-		log.Fatal(message)
+		panic(message)
 	}
 }
 
@@ -28,7 +27,7 @@ func assertNil(a interface{}, message string) {
 		if message == "" {
 			message = fmt.Sprintf("%v != nil", a)
 		}
-		log.Fatal(message)
+		panic(message)
 	}
 }
 
@@ -37,7 +36,7 @@ func assertTrue(ok bool, message string) {
 		if message == "" {
 			message = fmt.Sprintf("ok == false")
 		}
-		log.Fatal(message)
+		panic(message)
 	}
 }
 
@@ -46,6 +45,6 @@ func assertNotTrue(ok bool, message string) {
 		if message == "" {
 			message = fmt.Sprintf("ok == true")
 		}
-		log.Fatal(message)
+		panic(message)
 	}
 }

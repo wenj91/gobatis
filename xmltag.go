@@ -2,7 +2,6 @@ package gobatis
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 	"regexp"
 	"strings"
@@ -37,6 +36,8 @@ type mixedSqlNode struct {
 	sqlNodes []iSqlNode
 }
 
+var _ iSqlNode = &mixedSqlNode{}
+
 func (m *mixedSqlNode) build(ctx *dynamicContext) bool {
 	for i := 0; i < len(m.sqlNodes); i++ {
 		sqlNode := m.sqlNodes[i]
@@ -52,6 +53,8 @@ type ifSqlNode struct {
 	sqlNode iSqlNode
 }
 
+var _ iSqlNode = &ifSqlNode{}
+
 func (i *ifSqlNode) build(ctx *dynamicContext) bool {
 	if ok := eval(i.test, ctx.params); ok {
 		i.sqlNode.build(ctx)
@@ -65,6 +68,8 @@ func (i *ifSqlNode) build(ctx *dynamicContext) bool {
 type textSqlNode struct {
 	content string
 }
+
+var _ iSqlNode = &textSqlNode{}
 
 func (t *textSqlNode) build(ctx *dynamicContext) bool {
 	ctx.appendSql(t.content)
@@ -84,10 +89,12 @@ type foreachSqlNode struct {
 	index      string
 }
 
+var _ iSqlNode = &foreachSqlNode{}
+
 func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 	collection, ok := ctx.params[f.collection]
 	if !ok {
-		log.Println("No collection for foreach tag:", f.collection)
+		LOG.Warn("No collection for foreach tag:%s", f.collection)
 		return false
 	}
 
@@ -96,7 +103,7 @@ func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 	val := reflect.ValueOf(collection)
 
 	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
-		log.Println("Foreach tag collection must be slice or array")
+		LOG.Info("Foreach tag collection must be slice or array")
 		return false
 	}
 
@@ -111,7 +118,7 @@ func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 		params := make(map[string]interface{})
 		switch v.Kind() {
 		case reflect.Array, reflect.Slice:
-			log.Println("Foreach tag collection element must not be slice or array")
+			LOG.Info("Foreach tag collection element must not be slice or array")
 			return false
 		case reflect.Struct:
 			m := f.structToMap(v.Interface())
@@ -203,7 +210,7 @@ func (f *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 	}
 
 	if start != 0 {
-		log.Println("WARN: token not close, SqlStr:" + ctx.sqlStr + " At:" + fmt.Sprintf("%d", start))
+		LOG.Warn("WARN: token not close, SqlStr:" + ctx.sqlStr + " At:" + fmt.Sprintf("%d", start))
 	}
 
 	finalSqlStr += sqlStr
@@ -355,3 +362,5 @@ func (c *chooseNode) build(ctx *dynamicContext) bool {
 	}
 	return false
 }
+
+// include

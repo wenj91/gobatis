@@ -3,7 +3,6 @@ package gobatis
 import (
 	"database/sql"
 	"errors"
-	"log"
 	"reflect"
 )
 
@@ -55,7 +54,7 @@ Tips: "(&res)" --> don't forget "&"
 	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
 	if len(arr) > 1 {
 		//return errors.New("Struct query result more than one row")
-		log.Println("[WARN] Struct query result more than one row")
+		LOG.Warn("Struct query result more than one row")
 		resVal.Elem().Set(reflect.ValueOf(arr[0]))
 	}
 
@@ -65,7 +64,7 @@ Tips: "(&res)" --> don't forget "&"
 	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
 	if len(arr) == 0 {
 		//return errors.New("No result")
-		log.Println("[WARN] Struct query result is nil")
+		LOG.Warn("Struct query result is nil")
 	}
 
 	if len(arr) == 1 {
@@ -266,7 +265,7 @@ func rowsToMaps(rows *sql.Rows) ([]interface{}, error) {
 		resMap := make(map[string]interface{})
 		cols, err := rows.Columns()
 		if nil != err {
-			log.Println(err)
+			LOG.Error("rows to maps err:%v", err)
 			return res, err
 		}
 
@@ -300,7 +299,7 @@ func rowsToSlices(rows *sql.Rows) ([]interface{}, error) {
 		resSlice := make([]interface{}, 0)
 		cols, err := rows.Columns()
 		if nil != err {
-			log.Println(err)
+			LOG.Error("rows to slices err:%v", err)
 			return nil, err
 		}
 
@@ -344,7 +343,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 	for rows.Next() {
 		cols, err := rows.Columns()
 		if nil != err {
-			log.Println("rows.Columns() err:", err)
+			LOG.Error("rows.Columns() err:%v", err)
 			return nil, err
 		}
 
@@ -375,7 +374,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 					warnInfo := "[WARN] fieldType != dataType, filedName:" + fieldName +
 						" fieldType:" + field.Type().Name() +
 						" dataType:" + reflect.TypeOf(data).Name()
-					log.Println(warnInfo)
+					LOG.Warn(warnInfo)
 				}
 
 				if nil != data {
