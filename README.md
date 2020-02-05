@@ -2,6 +2,29 @@
 
 目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
 
+## gobatis接口
+
+```go
+type GoBatis interface {
+	// Select 查询数据
+	Select(stmt string, param interface{}) func(res interface{}) error
+	// SelectContext 查询数据with context
+	SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error
+	// Insert 插入数据
+	Insert(stmt string, param interface{}) (int64, int64, error)
+	// InsertContext 插入数据with context
+	InsertContext(ctx context.Context, stmt string, param interface{}) (int64, int64, error)
+	// Update 更新数据
+	Update(stmt string, param interface{}) (int64, error)
+	// UpdateContext 更新数据with context
+	UpdateContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+	// Delete 刪除数据
+	Delete(stmt string, param interface{}) (int64, error)
+	// DeleteContext 刪除数据with context
+	DeleteContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+}
+```
+
 ## db数据源配置
 - 支持多数据源配置
 - db子级配置为一个map，map的key即为数据源名称标识  
