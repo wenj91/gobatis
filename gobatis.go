@@ -165,6 +165,66 @@ func (d *DB) BeginTx(ctx context.Context, opts *sql.TxOptions) (*TX, error) {
 	return t, nil
 }
 
+// Transaction tx
+func (d *DB) Transaction(fn func(tx *TX) error) error {
+
+	tx, err := d.Begin()
+	if nil != err {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			if nil != err {
+				LOG.Error("tx rollback err:#v", err)
+			}
+		}
+	}()
+
+	err = fn(tx)
+	if nil != err {
+		return err
+	}
+
+	err = tx.Commit()
+	if nil != err {
+		return err
+	}
+
+	return nil
+}
+
+// Transaction tx
+func (d *DB) TransactionTX(ctx context.Context, opts *sql.TxOptions, fn func(tx *TX) error) error {
+
+	tx, err := d.BeginTx(ctx, opts)
+	if nil != err {
+		return err
+	}
+
+	defer func() {
+		if err != nil {
+			err = tx.Rollback()
+			if nil != err {
+				LOG.Error("tx rollback err:#v", err)
+			}
+		}
+	}()
+
+	err = fn(tx)
+	if nil != err {
+		return err
+	}
+
+	err = tx.Commit()
+	if nil != err {
+		return err
+	}
+
+	return nil
+}
+
 // Close db
 //
 // ps：
