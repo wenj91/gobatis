@@ -28,17 +28,17 @@ type GoBatis interface {
 	// SelectContext 查询数据with context
 	SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error
 	// Insert 插入数据
-	Insert(stmt string, param interface{}) (int64, int64, error)
+	Insert(stmt string, param interface{}) (lastInsertId int64, affected int64, err error)
 	// InsertContext 插入数据with context
-	InsertContext(ctx context.Context, stmt string, param interface{}) (int64, int64, error)
+	InsertContext(ctx context.Context, stmt string, param interface{}) (lastInsertId int64, affected int64, err error)
 	// Update 更新数据
-	Update(stmt string, param interface{}) (int64, error)
+	Update(stmt string, param interface{}) (affected int64, err error)
 	// UpdateContext 更新数据with context
-	UpdateContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+	UpdateContext(ctx context.Context, stmt string, param interface{}) (affected int64, err error)
 	// Delete 刪除数据
-	Delete(stmt string, param interface{}) (int64, error)
+	Delete(stmt string, param interface{}) (affected int64, err error)
 	// DeleteContext 刪除数据with context
-	DeleteContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+	DeleteContext(ctx context.Context, stmt string, param interface{}) (affected int64, err error)
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go start
