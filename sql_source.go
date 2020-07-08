@@ -123,6 +123,7 @@ func (ss *staticSqlSource) tokenHandler(params map[string]interface{}) {
 			sqlStr = sqlStr[i+2:]
 
 			itemStr = strings.Trim(itemStr, " ")
+			itemStr = strings.TrimSpace(itemStr)
 			ss.paramMappings = append(ss.paramMappings, itemStr)
 
 			finalSqlStr += "?"
