@@ -125,7 +125,14 @@ func structToMap(s interface{}) map[string]interface{} {
 			fieldVal := objVal.Field(i)
 			if fieldVal.CanInterface() {
 				field := objType.Field(i)
-				res[field.Name] = fieldToVal(fieldVal.Interface())
+
+				data := fieldToVal(fieldVal.Interface())
+				res[field.Name] = data
+				// 同时可以使用tag做参数名 https://github.com/wenj91/gobatis/issues/43
+				tag := field.Tag.Get("field")
+				if tag != "" && tag != "-" {
+					res[tag] = data
+				}
 			}
 		}
 	}
