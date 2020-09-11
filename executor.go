@@ -23,6 +23,7 @@ func (exec *executor) updateContext(ctx context.Context, ms *mappedStmt, params 
 	if nil != err {
 		return 0, 0, err
 	}
+	defer stmt.Close()
 
 	result, err := stmt.ExecContext(ctx, paramArr...)
 	if nil != err {
@@ -55,6 +56,7 @@ func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 	if nil != err {
 		return 0, 0, err
 	}
+	defer stmt.Close()
 
 	result, err := stmt.Exec(paramArr...)
 	if nil != err {
@@ -87,6 +89,7 @@ func (exec *executor) queryContext(ctx context.Context, ms *mappedStmt, params m
 	if nil != err {
 		return err
 	}
+	defer rows.Close()
 
 	resProc, ok := resSetProcMap[ms.resultType]
 	if !ok {
@@ -116,6 +119,7 @@ func (exec *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 	if nil != err {
 		return err
 	}
+	defer rows.Close()
 
 	resProc, ok := resSetProcMap[ms.resultType]
 	if !ok {
