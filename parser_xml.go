@@ -14,10 +14,21 @@ const (
 )
 
 type node struct {
-	Id       string
-	Name     string
-	Attrs    map[string]xml.Attr
-	Elements []element
+	Id        string
+	Namespace string
+	Name      string
+	Attrs     map[string]xml.Attr
+	Elements  []element
+}
+
+func (n *node) getAttr(attr string) string {
+	res := ""
+	at, ok := n.Attrs[attr]
+	if ok {
+		res = at.Value
+	}
+
+	return res
 }
 
 type element struct {
@@ -28,6 +39,7 @@ type element struct {
 func parse(r io.Reader) *node {
 	parser := xml.NewDecoder(r)
 	var root node
+	namespace := ""
 
 	st := NewStack()
 	for {
@@ -49,17 +61,26 @@ func parse(r io.Reader) *node {
 				Attrs:    attrMap,
 				Elements: make([]element, 0),
 			}
-			for _, val := range attr {
-				if val.Name.Local == "id" {
-					node.Id = val.Value
-				}
+
+			id := node.getAttr("id")
+			node.Id = id
+
+			if namespace == "" {
+				namespace = node.getAttr("namespace")
 			}
+
 			st.Push(node)
 
 		case xml.EndElement: //tag end
 			if st.Len() > 0 {
 				//cur node
 				n := st.Pop().(node)
+
+				// set namespace
+				if namespace != "" {
+					n.Namespace = namespace + "."
+				}
+
 				if st.Len() > 0 { //if the root node then append to element
 					e := element{
 						ElementType: eleTpNode,

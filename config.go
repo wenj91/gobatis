@@ -30,7 +30,9 @@ func configInit(dbConf *DBConfig) {
 
 	mapperConf := &mapperConfig{
 		mappedStmts: make(map[string]*node),
+		mappedSql:   make(map[string]*node),
 	}
+
 	for _, item := range dbConf.Mappers {
 		f, err := os.Open(item)
 		if nil != err {
@@ -41,6 +43,11 @@ func configInit(dbConf *DBConfig) {
 		mc := buildMapperConfig(f)
 		for k, ms := range mc.mappedStmts {
 			mapperConf.put(k, ms)
+		}
+
+		// sql tag cache
+		for k, ms := range mc.mappedSql {
+			mapperConf.putSql(k, ms)
 		}
 	}
 
