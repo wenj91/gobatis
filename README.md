@@ -103,6 +103,15 @@ value: 则数据库查询结果为单个数值
 <!DOCTYPE mapper PUBLIC "gobatis"
         "https://raw.githubusercontent.com/wenj91/gobatis/master/gobatis.dtd">
 <mapper namespace="userMapper">
+	<sql id="Base_Column_List">
+        id, name, crtTm, pwd, email
+    </sql>
+    <select id="findIncludeMaps" resultType="maps">
+        SELECT
+        	<include refid="Base_Column_List" />
+        FROM user
+        limit 10
+    </select>
     <select id="findMapById" resultType="map">
         SELECT id, name FROM user where id=#{id} order by id
     </select>
@@ -214,6 +223,11 @@ func main() {
 	res = make([]*User, 0)
 	err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
 	fmt.Println("queryStructsByCond2", res, err)
+
+	// include tag
+	ms := make([]map[string]interface{}, 0)
+	err = gb.Select("userMapper.findIncludeMaps", nil)(&ms)
+	fmt.Println("userMapper.findIncludeMaps-->", ms, err)
 	
 	// ${id}
 	res = make([]*User, 0)
