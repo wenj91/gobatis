@@ -103,7 +103,7 @@ value: 则数据库查询结果为单个数值
 <!DOCTYPE mapper PUBLIC "gobatis"
         "https://raw.githubusercontent.com/wenj91/gobatis/master/gobatis.dtd">
 <mapper namespace="userMapper">
-	<sql id="Base_Column_List">
+    <sql id="Base_Column_List">
         id, name, crtTm, pwd, email
     </sql>
     <select id="findIncludeMaps" resultType="maps">
