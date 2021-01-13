@@ -23,7 +23,7 @@ func (d *dynamicContext) appendSql(sqlStr string) {
 }
 
 func (d *dynamicContext) toSql() string {
-	return d.sqlStr
+	return strings.TrimSpace(d.sqlStr)
 }
 
 // [ref](http://www.mybatis.org/mybatis-3/dynamic-sql.html)
