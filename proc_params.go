@@ -126,12 +126,14 @@ func structToMap(s interface{}) map[string]interface{} {
 			if fieldVal.CanInterface() {
 				field := objType.Field(i)
 
-				data := fieldToVal(fieldVal.Interface())
-				res[field.Name] = data
-				// 同时可以使用tag做参数名 https://github.com/wenj91/gobatis/issues/43
-				tag := field.Tag.Get("field")
-				if tag != "" && tag != "-" {
-					res[tag] = data
+				data, ok := fieldToVal(fieldVal.Interface())
+				if ok {
+					res[field.Name] = data
+					// 同时可以使用tag做参数名 https://github.com/wenj91/gobatis/issues/43
+					tag := field.Tag.Get("field")
+					if tag != "" && tag != "-" {
+						res[tag] = data
+					}
 				}
 			}
 		}
@@ -140,7 +142,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	return res
 }
 
-func fieldToVal(field interface{}) interface{} {
+func fieldToVal(field interface{}) (interface{}, bool) {
 	objVal := reflect.ValueOf(field)
 	if objVal.Kind() == reflect.Ptr {
 		objVal = objVal.Elem()
@@ -150,14 +152,14 @@ func fieldToVal(field interface{}) interface{} {
 	switch tp.Name() {
 	case "Time":
 		if nil != field {
-			return field.(time.Time).Format("2006-01-02 15:04:05")
+			return field.(time.Time).Format("2006-01-02 15:04:05"), true
 		}
 	case "NullString":
 		if nil != field {
 			ns := field.(NullString)
 			if ns.Valid {
 				str, _ := ns.Value()
-				return str
+				return str, true
 			}
 		}
 	case "NullInt64":
@@ -165,7 +167,7 @@ func fieldToVal(field interface{}) interface{} {
 			ni64 := field.(NullInt64)
 			if ni64.Valid {
 				i, _ := ni64.Value()
-				return i
+				return i, true
 			}
 		}
 	case "NullBool":
@@ -173,7 +175,7 @@ func fieldToVal(field interface{}) interface{} {
 			nb := field.(NullBool)
 			if nb.Valid {
 				b, _ := nb.Value()
-				return b
+				return b, true
 			}
 		}
 	case "NullFloat64":
@@ -181,7 +183,7 @@ func fieldToVal(field interface{}) interface{} {
 			nf := field.(NullFloat64)
 			if nf.Valid {
 				f, _ := nf.Value()
-				return f
+				return f, true
 			}
 		}
 	case "NullTime":
@@ -189,12 +191,12 @@ func fieldToVal(field interface{}) interface{} {
 			nt := field.(NullTime)
 			if nt.Valid {
 				t, _ := nt.Value()
-				return t.(time.Time).Format("2006-01-02 15:04:05")
+				return t.(time.Time).Format("2006-01-02 15:04:05"), true
 			}
 		}
 	default:
-		return field
+		return field, true
 	}
 
-	return nil
+	return nil, false
 }
