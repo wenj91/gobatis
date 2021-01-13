@@ -6,7 +6,7 @@
 
 提供了简单的增删改查代码自动生成
 
-具体操作看仓库： `https://github.com/wenj91/mctl.git`
+具体操作看仓库： [https://github.com/wenj91/mctl.git](https://github.com/wenj91/mctl.git)
 
 ## gobatis接口
 
