@@ -193,9 +193,9 @@ func (f *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 			var re = regexp.MustCompile("^\\s*" + f.item + "\\s*")
 			itemPrefix := listItemPrefix + f.item + fmt.Sprintf("%d", index)
 			s := re.ReplaceAllString(itemStr, itemPrefix)
-			s = strings.Trim(s, " ")
+			s = strings.TrimSpace(s)
 			if strings.Contains(s, itemPrefix) {
-				itemKey := strings.Trim(itemStr, " ")
+				itemKey := strings.TrimSpace(itemStr)
 				if v, ok := ctx.params[itemKey]; ok {
 					ctx.params[s] = v
 				}
@@ -281,12 +281,12 @@ func (t *trimSqlNode) build(ctx *dynamicContext) bool {
 
 		preOv := strings.TrimSpace(t.prefixOverrides)
 		if preOv != "" {
-			sqlStr = strings.TrimPrefix(sqlStr, preOv+" ")
+			sqlStr = strings.TrimPrefix(sqlStr, preOv)
 		}
 
 		suffOv := strings.TrimSpace(t.suffixOverrides)
 		if suffOv != "" {
-			sqlStr = strings.TrimSuffix(sqlStr, suffOv+" ")
+			sqlStr = strings.TrimSuffix(sqlStr, suffOv)
 		}
 
 		pre := strings.TrimSpace(t.prefix)
