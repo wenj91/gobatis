@@ -74,7 +74,7 @@ func (ss *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 			finalSqlStr += sqlStr[:start-1]
 			sqlStr = sqlStr[i+2:]
 
-			itemStr = strings.Trim(itemStr, " ")
+			itemStr = strings.TrimSpace(itemStr)
 			//ss.paramMappings = append(ss.paramMappings, itemStr)
 
 			item, ok := params[itemStr]
@@ -96,7 +96,7 @@ func (ss *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 	}
 
 	finalSqlStr += sqlStr
-	finalSqlStr = strings.Trim(finalSqlStr, " ")
+	finalSqlStr = strings.TrimSpace(finalSqlStr)
 	ss.sqlStr = finalSqlStr
 }
 
@@ -139,6 +139,6 @@ func (ss *staticSqlSource) tokenHandler(params map[string]interface{}) {
 	}
 
 	finalSqlStr += sqlStr
-	finalSqlStr = strings.Trim(finalSqlStr, " ")
+	finalSqlStr = strings.TrimSpace(finalSqlStr)
 	ss.sqlStr = finalSqlStr
 }
