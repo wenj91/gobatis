@@ -739,19 +739,27 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 		}
 	case typeName == "NullTime":
 		if nil != data {
-			if reflect.TypeOf(data).Kind() == reflect.Slice ||
-				reflect.TypeOf(data).Kind() == reflect.Array {
-				data = string(data.([]byte))
+			var t time.Time
+			dt, ok := data.(time.Time)
+			if !ok {
+				if reflect.TypeOf(data).Kind() == reflect.Slice ||
+					reflect.TypeOf(data).Kind() == reflect.Array {
+					data = string(data.([]byte))
+				} else {
+					data = valToString(data)
+				}
+
+				tt, err := time.Parse("2006-01-02 15:04:05", data.(string))
+				if err != nil {
+					panic("time.Parse err:" + err.Error())
+				}
+
+				t = tt
 			} else {
-				data = valToString(data)
+				t = dt
 			}
 
-			tm, err := time.Parse("2006-01-02 15:04:05", data.(string))
-			if err != nil {
-				panic("time.Parse err:" + err.Error())
-			}
-
-			return NullTime{Time: tm, Valid: true}
+			return NullTime{Time: t, Valid: true}
 		}
 	}
 
