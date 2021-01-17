@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!ELEMENT mapper (select*, update*, insert*, delete*)>
+<!ELEMENT mapper (select*, update*, insert*, delete*,sql*)>
 <!ATTLIST mapper namespace>
 
 
