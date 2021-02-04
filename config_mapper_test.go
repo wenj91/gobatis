@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
 )
@@ -38,9 +39,9 @@ func TestBuildConfig(t *testing.T) {
 `
 	r := strings.NewReader(xmlStr)
 	conf := buildMapperConfig(r)
-	assertNotNil(conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
-	assertNotNil(conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
-	assertNotNil(conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
-	assertNotNil(conf.getMappedStmt("Mapper.deleteById"), "Mapper.deleteById mapped stmt is nil")
-	assertNotNil(conf.getMappedStmt("Mapper.updateByCond"), "Mapper.deleteById mapped stmt is nil")
+	assert.NotNil(t, conf.getMappedStmt("Mapper.findMapById"), "Mapper.findMapById mapped stmt is nil")
+	assert.NotNil(t, conf.getMappedStmt("Mapper.insertStructsBatch"), "Mapper.insertStructsBatch mapped stmt is nil")
+	assert.NotNil(t, conf.getMappedStmt("Mapper.updateByStruct"), "Mapper.updateByStruct mapped stmt is nil")
+	assert.NotNil(t, conf.getMappedStmt("Mapper.deleteById"), "Mapper.deleteById mapped stmt is nil")
+	assert.NotNil(t, conf.getMappedStmt("Mapper.updateByCond"), "Mapper.deleteById mapped stmt is nil")
 }

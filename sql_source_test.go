@@ -2,6 +2,7 @@ package gobatis
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -17,9 +18,9 @@ func TestStaticSqlSource_getBoundSql(t *testing.T) {
 	})
 
 	expc := "select * from t_gap where id = ? and gap = ?"
-	assertEqual(bs.sqlStr, expc, "test failed, actual:"+bs.sqlStr)
-	assertEqual(bs.params["id"], 1, "test failed, actual:"+fmt.Sprintf("%d", bs.params["id"]))
-	assertEqual(bs.params["gap"], 10, "test failed, actual:"+fmt.Sprintf("%d", bs.params["gap"]))
+	assert.Equal(t, bs.sqlStr, expc, "test failed, actual:"+bs.sqlStr)
+	assert.Equal(t, bs.params["id"], 1, "test failed, actual:"+fmt.Sprintf("%d", bs.params["id"]))
+	assert.Equal(t, bs.params["gap"], 10, "test failed, actual:"+fmt.Sprintf("%d", bs.params["gap"]))
 }
 
 func TestDynamicSqlSource_getBoundSql(t *testing.T) {
@@ -94,9 +95,9 @@ func TestDynamicSqlSource_getBoundSql(t *testing.T) {
 	bs := ds.getBoundSql(params)
 
 	expc := "select 1 from t_gap  where age = ?  and name = ?  and code = 'cctv' and id in ( ?  , ?  , ?  )"
-	assertEqual(bs.sqlStr, expc, "test failed, actual:"+bs.sqlStr)
-	assertEqual(bs.params["name"], "Sean", "test failed, actual:"+fmt.Sprintf("%d", bs.params["id"]))
-	assertEqual(bs.extParams["_ls_item_p_item0.A"], "aa", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item0.A"]))
-	assertEqual(bs.extParams["_ls_item_p_item1.A"], "bb", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item1.A"]))
-	assertEqual(bs.extParams["_ls_item_p_item2.A"], "cc", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item2.A"]))
+	assert.Equal(t, bs.sqlStr, expc, "test failed, actual:"+bs.sqlStr)
+	assert.Equal(t, bs.params["name"], "Sean", "test failed, actual:"+fmt.Sprintf("%d", bs.params["id"]))
+	assert.Equal(t, bs.extParams["_ls_item_p_item0.A"], "aa", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item0.A"]))
+	assert.Equal(t, bs.extParams["_ls_item_p_item1.A"], "bb", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item1.A"]))
+	assert.Equal(t, bs.extParams["_ls_item_p_item2.A"], "cc", "test failed, actual:"+fmt.Sprintf("%s", bs.extParams["_ls_item_p_item2.A"]))
 }

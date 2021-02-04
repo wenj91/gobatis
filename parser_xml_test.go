@@ -26,5 +26,5 @@ func TestXmlNode_parse(t *testing.T) {
 `
 	r := strings.NewReader(xmlStr)
 	rn := parse(r)
-	assertNotNil(rn, "Parse xml result is nil")
+	assert.NotNil(t, rn, "Parse xml result is nil")
 }

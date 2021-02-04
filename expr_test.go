@@ -2,6 +2,7 @@ package gobatis
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -48,15 +49,15 @@ func TestExpr_eval(t *testing.T) {
 	for i, ex := range expression {
 		ok := eval(ex, params)
 		fmt.Printf("Index:%v Expr:%v >>>> Result:%v \n", i, ex, ok)
-		assertExpr(i, ok, ex)
+		assertExpr(t, i, ok, ex)
 	}
 }
 
-func assertExpr(i int, ok bool, expr string) {
+func assertExpr(t *testing.T, i int, ok bool, expr string) {
 	switch i {
 	case 0, 3, 4, 6, 8, 9, 12, 14, 17, 22: // false
-		assertNotTrue(ok, "Expr:"+expr+" Result:true")
+		assert.True(t, !ok, "Expr:"+expr+" Result:true")
 	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19, 20, 21: // true
-		assertTrue(ok, "Expr:"+expr+" Result:false")
+		assert.True(t, ok, "Expr:"+expr+" Result:false")
 	}
 }
