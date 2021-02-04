@@ -275,7 +275,12 @@ func rowsToMaps(rows *sql.Rows) ([]interface{}, error) {
 			scanArgs[i] = &vals[i]
 		}
 
-		rows.Scan(scanArgs...)
+		err = rows.Scan(scanArgs...)
+		if nil != err {
+			LOG.Error("rows scan err:%v", err)
+			return nil, err
+		}
+
 		for i := 0; i < len(cols); i++ {
 			val := vals[i]
 			if nil != val {
@@ -309,7 +314,12 @@ func rowsToSlices(rows *sql.Rows) ([]interface{}, error) {
 			scanArgs[i] = &vals[i]
 		}
 
-		rows.Scan(scanArgs...)
+		err = rows.Scan(scanArgs...)
+		if nil != err {
+			LOG.Error("rows scan err:%v", err)
+			return nil, err
+		}
+
 		for i := 0; i < len(cols); i++ {
 			val := vals[i]
 			if nil != val {
@@ -367,18 +377,33 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 			// 设置相关字段的值,并判断是否可设值
 			if field.CanSet() && vals[i] != nil {
 				//获取字段类型并设值
-				data := dataToFieldVal(vals[i], field.Type(), fieldName)
-
-				// 数据库返回类型与字段类型不符合的情况下通知用户
-				if reflect.TypeOf(data).Name() != field.Type().Name() {
-					warnInfo := "[WARN] fieldType != dataType, filedName:" + fieldName +
-						" fieldType:" + field.Type().Name() +
-						" dataType:" + reflect.TypeOf(data).Name()
-					LOG.Warn(warnInfo)
+				ft := field.Type()
+				isPtr := false
+				if ft.Kind() == reflect.Ptr {
+					isPtr = true
+					ft = ft.Elem()
 				}
 
+				data := dataToFieldVal(vals[i], ft, fieldName)
 				if nil != data {
-					field.Set(reflect.ValueOf(data))
+					// 数据库返回类型与字段类型不符合的情况下提醒用户
+					dt := reflect.TypeOf(data)
+					if dt.Name() != ft.Name() {
+						warnInfo := "[WARN] fieldType != dataType, filedName:" + fieldName +
+							" fieldType:" + ft.Name() +
+							" dataType:" + dt.Name()
+						LOG.Warn(warnInfo)
+					}
+
+					if isPtr {
+						data = dataToPtr(data, ft, fieldName)
+						val := reflect.ValueOf(data)
+						field.Set(val)
+					} else {
+						val := reflect.ValueOf(data)
+						field.Set(val)
+					}
+
 				}
 			}
 		}
