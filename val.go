@@ -617,6 +617,152 @@ func valUpcast(data interface{}, typeName string) interface{} {
 	return d
 }
 
+func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} {
+	defer func() {
+		if err := recover(); nil != err {
+			LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
+		}
+	}()
+
+	typeName := tp.Name()
+	switch {
+	case typeName == "bool":
+		d := data.(bool)
+		data = &d
+	case typeName == "int":
+		d := data.(int)
+		data = &d
+	case typeName == "int8":
+		d := data.(int8)
+		data = &d
+	case typeName == "int16":
+		d := data.(int16)
+		data = &d
+	case typeName == "int32":
+		d := data.(int32)
+		data = &d
+	case typeName == "int64":
+		d := data.(int64)
+		data = &d
+	case typeName == "uint":
+		d := data.(uint)
+		data = &d
+	case typeName == "uint8":
+		d := data.(uint8)
+		data = &d
+	case typeName == "uint16":
+		d := data.(uint16)
+		data = &d
+	case typeName == "uint32":
+		d := data.(uint32)
+		data = &d
+	case typeName == "uint64":
+		d := data.(uint64)
+		data = &d
+	case typeName == "uintptr":
+		d := data.(uintptr)
+		data = &d
+	case typeName == "float32":
+		d := data.(float32)
+		data = &d
+	case typeName == "float64":
+		d := data.(float64)
+		data = &d
+	case typeName == "complex64":
+		d := data.(complex64)
+		data = &d
+	case typeName == "complex128":
+		d := data.(complex128)
+		data = &d
+	case typeName == "string":
+		d := data.(string)
+		data = &d
+	case typeName == "Time":
+		d := data.(time.Time)
+		data = &d
+	case typeName == "NullString":
+		if nil != data {
+			if reflect.TypeOf(data).Kind() == reflect.Slice ||
+				reflect.TypeOf(data).Kind() == reflect.Array {
+				data = string(data.([]byte))
+			} else {
+				data = valToString(data)
+			}
+			data = &NullString{String: data.(string), Valid: true}
+		}
+	case typeName == "NullInt64":
+		if nil != data {
+			if reflect.TypeOf(data).Kind() == reflect.Slice ||
+				reflect.TypeOf(data).Kind() == reflect.Array {
+				data = string(data.([]byte))
+			} else {
+				data = valToString(data)
+			}
+
+			i, err := strconv.ParseInt(data.(string), 10, 64)
+			if err != nil {
+				panic("ParseInt err:" + err.Error())
+			}
+			data = &NullInt64{Int64: i, Valid: true}
+		}
+	case typeName == "NullBool":
+		if nil != data {
+			if reflect.TypeOf(data).Kind() == reflect.Slice ||
+				reflect.TypeOf(data).Kind() == reflect.Array {
+				data = string(data.([]byte))
+			} else {
+				data = valToString(data)
+			}
+			if data.(string) == "true" {
+				return NullBool{Bool: true, Valid: true}
+			}
+			data = &NullBool{Bool: false, Valid: true}
+		}
+	case typeName == "NullFloat64":
+		if nil != data {
+			if reflect.TypeOf(data).Kind() == reflect.Slice ||
+				reflect.TypeOf(data).Kind() == reflect.Array {
+				data = string(data.([]byte))
+			} else {
+				data = valToString(data)
+			}
+
+			f64, err := strconv.ParseFloat(data.(string), 64)
+			if err != nil {
+				panic("ParseFloat err:" + err.Error())
+			}
+
+			data = &NullFloat64{Float64: f64, Valid: true}
+		}
+	case typeName == "NullTime":
+		if nil != data {
+			var t time.Time
+			dt, ok := data.(time.Time)
+			if !ok {
+				if reflect.TypeOf(data).Kind() == reflect.Slice ||
+					reflect.TypeOf(data).Kind() == reflect.Array {
+					data = string(data.([]byte))
+				} else {
+					data = valToString(data)
+				}
+
+				tt, err := time.Parse("2006-01-02 15:04:05", data.(string))
+				if err != nil {
+					panic("time.Parse err:" + err.Error())
+				}
+
+				t = tt
+			} else {
+				t = dt
+			}
+
+			data = &NullTime{Time: t, Valid: true}
+		}
+	}
+
+	return data
+}
+
 func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interface{} {
 	defer func() {
 		if err := recover(); nil != err {
