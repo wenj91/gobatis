@@ -144,6 +144,10 @@ func structToMap(s interface{}) map[string]interface{} {
 
 func fieldToVal(field interface{}) (interface{}, bool) {
 	objVal := reflect.ValueOf(field)
+	if objVal.IsNil() {
+		return nil, false
+	}
+
 	if objVal.Kind() == reflect.Ptr {
 		objVal = objVal.Elem()
 	}
@@ -151,48 +155,36 @@ func fieldToVal(field interface{}) (interface{}, bool) {
 	tp := objVal.Type()
 	switch tp.Name() {
 	case "Time":
-		if nil != field {
-			return field.(time.Time).Format("2006-01-02 15:04:05"), true
-		}
+		return field.(time.Time).Format("2006-01-02 15:04:05"), true
 	case "NullString":
-		if nil != field {
-			ns := field.(NullString)
-			if ns.Valid {
-				str, _ := ns.Value()
-				return str, true
-			}
+		ns := field.(NullString)
+		if ns.Valid {
+			str, _ := ns.Value()
+			return str, true
 		}
 	case "NullInt64":
-		if nil != field {
-			ni64 := field.(NullInt64)
-			if ni64.Valid {
-				i, _ := ni64.Value()
-				return i, true
-			}
+		ni64 := field.(NullInt64)
+		if ni64.Valid {
+			i, _ := ni64.Value()
+			return i, true
 		}
 	case "NullBool":
-		if nil != field {
-			nb := field.(NullBool)
-			if nb.Valid {
-				b, _ := nb.Value()
-				return b, true
-			}
+		nb := field.(NullBool)
+		if nb.Valid {
+			b, _ := nb.Value()
+			return b, true
 		}
 	case "NullFloat64":
-		if nil != field {
-			nf := field.(NullFloat64)
-			if nf.Valid {
-				f, _ := nf.Value()
-				return f, true
-			}
+		nf := field.(NullFloat64)
+		if nf.Valid {
+			f, _ := nf.Value()
+			return f, true
 		}
 	case "NullTime":
-		if nil != field {
-			nt := field.(NullTime)
-			if nt.Valid {
-				t, _ := nt.Value()
-				return t.(time.Time).Format("2006-01-02 15:04:05"), true
-			}
+		nt := field.(NullTime)
+		if nt.Valid {
+			t, _ := nt.Value()
+			return t.(time.Time).Format("2006-01-02 15:04:05"), true
 		}
 	default:
 		return field, true
