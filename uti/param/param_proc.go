@@ -129,7 +129,7 @@ func StructToMap(s interface{}) map[string]interface{} {
 			if fieldVal.CanInterface() {
 				field := objType.Field(i)
 
-				data, ok := fieldToVal(fieldVal.Interface())
+				data, ok := FieldToVal(fieldVal.Interface())
 				if ok {
 					res[field.Name] = data
 					// 同时可以使用tag做参数名 https://github.com/wenj91/gobatis/issues/43
@@ -145,9 +145,9 @@ func StructToMap(s interface{}) map[string]interface{} {
 	return res
 }
 
-func fieldToVal(field interface{}) (interface{}, bool) {
+func FieldToVal(field interface{}) (interface{}, bool) {
 	isNil, _ := uti.IsNil(field)
-	if !isNil {
+	if isNil {
 		return nil, false
 	}
 
@@ -191,6 +191,10 @@ func fieldToVal(field interface{}) (interface{}, bool) {
 			return t.(time.Time).Format("2006-01-02 15:04:05"), true
 		}
 	default:
+		if objVal.CanInterface() {
+			return objVal.Interface(), true
+		}
+
 		return field, true
 	}
 

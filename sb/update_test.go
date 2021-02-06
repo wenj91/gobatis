@@ -17,20 +17,23 @@ func (c *customer2) Table() string {
 }
 
 func TestUpdate(t *testing.T) {
-	c := customer{}
-	query := Model(&c).
+	c := customer2{}
+	query, args := Model(&c).
 		Update().
 		Set("name", "Name").
 		Set("phone", "Phone").
 		Build()
 
-	expectedQuery := "update customer set name = #{Name}, phone = #{Phone}"
+	expectedQuery := "update customer set name = ?, phone = ?"
 	assert.True(t, query == expectedQuery, fmt.Sprintf("bad query: %s", query))
+	assert.True(t, len(args) == 2)
+	assert.True(t, args[0] == "Name", fmt.Sprintf("args[0] err, excpect:%s actual:%s", "Name", args[0]))
+	assert.True(t, args[1] == "Phone", fmt.Sprintf("args[1] err, excpect:%s actual:%s", "Phone", args[1]))
 }
 
 func TestUpdateWithWhere(t *testing.T) {
-	c := customer{}
-	query := Model(&c).Update().
+	c := customer2{}
+	query, args := Model(&c).Update().
 		Set("name", "Name").
 		Set("phone", "Phone").
 		Where(
@@ -38,6 +41,10 @@ func TestUpdateWithWhere(t *testing.T) {
 		).
 		Build()
 
-	expectedQuery := "update customer set name = #{Name}, phone = #{Phone} where (id = #{Id})"
+	expectedQuery := "update customer set name = ?, phone = ? where (id = ?)"
 	assert.True(t, query == expectedQuery, fmt.Sprintf("bad query: %s", query))
+	assert.True(t, len(args) == 3)
+	assert.True(t, args[0] == "Name", fmt.Sprintf("args[0] err, excpect:%s actual:%s", "Name", args[0]))
+	assert.True(t, args[1] == "Phone", fmt.Sprintf("args[1] err, excpect:%s actual:%s", "Phone", args[1]))
+	assert.True(t, args[2] == "Id", fmt.Sprintf("args[2] err, excpect:%s actual:%s", "Id", args[2]))
 }

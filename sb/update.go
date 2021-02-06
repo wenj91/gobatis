@@ -7,9 +7,9 @@ import (
 )
 
 type updateSet struct {
-	col  string
-	mark string
-	raw  bool
+	col string
+	arg string
+	raw bool
 }
 
 // UpdateStatement represents an update statement.
@@ -20,8 +20,8 @@ type UpdateStatement struct {
 }
 
 // Set returns a new statement with column 'col' set to value 'val'.
-func (s UpdateStatement) Set(col string, mark string) UpdateStatement {
-	s.sets = append(s.sets, updateSet{col: col, mark: mark, raw: false})
+func (s UpdateStatement) Set(col string, arg string) UpdateStatement {
+	s.sets = append(s.sets, updateSet{col: col, arg: arg, raw: false})
 	return s
 }
 
@@ -38,7 +38,7 @@ func (s UpdateStatement) Where(cond Cond, cs ...Cond) UpdateStatement {
 }
 
 // Build builds the SQL query. It returns the query and the argument slice.
-func (s UpdateStatement) Build() (query string) {
+func (s UpdateStatement) Build() (query string, args []interface{}) {
 	if len(s.sets) == 0 {
 		panic("sqlbuilder: no columns set")
 	}
@@ -47,12 +47,15 @@ func (s UpdateStatement) Build() (query string) {
 	var sets []string
 
 	for _, set := range s.sets {
-		sets = append(sets, fmt.Sprintf("%s = #{%s}", set.col, set.mark))
+		sets = append(sets, fmt.Sprintf("%s = ?", set.col))
+		args = append(args, set.arg)
 	}
 	query += strings.Join(sets, ", ")
 
 	if len(s.wheres) > 0 {
-		query += buildCond(s.wheres)
+		ss, v := buildCond(s.wheres)
+		query += ss
+		args = append(args, v...)
 	}
 
 	return

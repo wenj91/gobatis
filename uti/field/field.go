@@ -1,6 +1,7 @@
 package field
 
 import (
+	"github.com/wenj91/gobatis/uti/param"
 	"reflect"
 )
 
@@ -26,8 +27,7 @@ func Fields(m interface{}) []string {
 }
 
 // Map return model sql mapper fields
-func Map(m interface{}) map[string]string {
-	fm := make(map[string]string, 0)
+func Map(m interface{}) (cols []string, vals []interface{}) {
 	if nil != m {
 		objVal := reflect.ValueOf(m)
 		objType := reflect.TypeOf(m)
@@ -50,18 +50,21 @@ func Map(m interface{}) map[string]string {
 					ft := objType.Field(i)
 					tag := ft.Tag.Get("field")
 					if tag != "" && tag != "-" {
-						fm[tag] = ft.Name
+						f, _ := param.FieldToVal(field.Interface())
+						cols = append(cols, tag)
+						vals = append(vals, f)
 					}
 				}
 			} else {
 				ft := objType.Field(i)
 				tag := ft.Tag.Get("field")
 				if tag != "" && tag != "-" {
-					fm[tag] = ft.Name
+					cols = append(cols, tag)
+					vals = append(vals, field.Interface())
 				}
 			}
 		}
 	}
 
-	return fm
+	return
 }

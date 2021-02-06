@@ -1,7 +1,6 @@
 package sb
 
 import (
-	"fmt"
 	"github.com/wenj91/gobatis/m"
 	"github.com/wenj91/gobatis/uti/field"
 	"strings"
@@ -31,16 +30,15 @@ func (s InsertStatement) Return(col string, dest interface{}) InsertStatement {
 }
 
 // Build builds the SQL query. It returns the SQL query and the argument slice.
-func (s InsertStatement) Build() (query string) {
-	var cols, vals []string
-
-	fm := field.Map(s.model)
-	for k, v := range fm {
-		cols = append(cols, k)
-		vals = append(vals, fmt.Sprintf("#{%s}", v))
+func (s InsertStatement) Build() (query string, args []interface{}) {
+	q := make([]string, 0)
+	cols, vals := field.Map(s.model)
+	args = append(args, vals...)
+	for _, _ = range cols {
+		q = append(q, "?")
 	}
 
-	query = "insert into " + s.model.Table() + " (" + strings.Join(cols, ", ") + ") values (" + strings.Join(vals, ", ") + ")"
+	query = "insert into " + s.model.Table() + " (" + strings.Join(cols, ", ") + ") values (" + strings.Join(q, ", ") + ")"
 
 	return
 }

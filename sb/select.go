@@ -3,7 +3,6 @@ package sb
 import (
 	"github.com/wenj91/gobatis/m"
 	"github.com/wenj91/gobatis/uti/field"
-	"strconv"
 	"strings"
 )
 
@@ -106,7 +105,7 @@ func (s SelectStatement) Lock() SelectStatement {
 
 // Build builds the SQL query. It returns the query, the argument slice,
 // and the destination slice.
-func (s SelectStatement) Build() (query string) {
+func (s SelectStatement) Build() (query string, args []interface{}) {
 	if nil == s.model {
 		panic("model must not be nil")
 	}
@@ -130,7 +129,9 @@ func (s SelectStatement) Build() (query string) {
 	}
 
 	if len(s.wheres) > 0 {
-		query += buildCond(s.wheres)
+		ss, vals := buildCond(s.wheres)
+		query += ss
+		args = append(args, vals...)
 	}
 
 	if len(s.orders) > 0 {
@@ -153,11 +154,13 @@ func (s SelectStatement) Build() (query string) {
 	}
 
 	if s.limit != nil {
-		query += " limit " + strconv.Itoa(*s.limit)
+		query += " limit ?"
+		args = append(args, *s.limit)
 	}
 
 	if s.offset != nil {
-		query += " offset " + strconv.Itoa(*s.offset)
+		query += " offset ?"
+		args = append(args, *s.offset)
 	}
 
 	if s.lock {

@@ -23,11 +23,13 @@ func (s DeleteStatement) Where(cond Cond, cs ...Cond) DeleteStatement {
 }
 
 // Build builds the SQL query. It returns the query and the argument slice.
-func (s DeleteStatement) Build() (query string) {
+func (s DeleteStatement) Build() (query string, args []interface{}) {
 	query = "delete from " + s.model.Table()
 
 	if len(s.wheres) > 0 {
-		query += buildCond(s.wheres)
+		ss, v := buildCond(s.wheres)
+		query += ss
+		args = append(args, v...)
 	}
 
 	return

@@ -24,12 +24,16 @@ func TestInsert(t *testing.T) {
 		Phone: uti.PS("hodss"),
 	}
 
-	query := Model(&c).
+	query, args := Model(&c).
 		Insert().
 		Build()
 
-	expectedQuery := "insert into customer (id, name, phone) values (#{ID}, #{Name}, #{Phone})"
+	expectedQuery := "insert into customer (id, name, phone) values (?, ?, ?)"
 	assert.True(t, query == expectedQuery, fmt.Sprintf("bad query: %s", query))
+	assert.True(t, len(args) == 3, fmt.Sprintf("the len of args err, excpect:%d actual:%d", 3, len(args)))
+	assert.True(t, args[0] == 0, fmt.Sprintf("args[0] err, excpect:%d actual:%d", 0, args[0]))
+	assert.True(t, args[1] == "Name", fmt.Sprintf("args[1] err, excpect:%s actual:%s", "Name", args[1]))
+	assert.True(t, args[2] == "hodss", fmt.Sprintf("args[2] err, excpect:%s actual:%s", "hodss", args[2]))
 }
 
 func TestInsertWithNil(t *testing.T) {
@@ -39,10 +43,13 @@ func TestInsertWithNil(t *testing.T) {
 		Phone: nil,
 	}
 
-	query := Model(&c).
+	query, args := Model(&c).
 		Insert().
 		Build()
 
-	expectedQuery := "insert into customer (id, name) values (#{ID}, #{Name})"
+	expectedQuery := "insert into customer (id, name) values (?, ?)"
 	assert.True(t, query == expectedQuery, fmt.Sprintf("bad query: %s", query))
+	assert.True(t, len(args) == 2, fmt.Sprintf("the len of args err, excpect:%d actual:%d", 2, len(args)))
+	assert.True(t, args[0] == 0, fmt.Sprintf("args[0] err, excpect:%d actual:%d", 0, args[0]))
+	assert.True(t, args[1] == "Name", fmt.Sprintf("args[1] err, excpect:%s actual:%s", "Name", args[1]))
 }
