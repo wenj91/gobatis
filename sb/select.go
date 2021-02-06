@@ -17,20 +17,27 @@ func Select(cols ...string) SelectStatement {
 
 // SelectStatement represents a SELECT statement.
 type SelectStatement struct {
-	model   m.Model
-	selects []string
-	joins   []join
-	wheres  []Cond
-	lock    bool
-	limit   *int
-	offset  *int
-	orders  []Od
-	group   []string
-	having  string
+	model      m.Model
+	resultType m.ResultType
+	selects    []string
+	joins      []join
+	wheres     []Cond
+	lock       bool
+	limit      *int
+	offset     *int
+	orders     []Od
+	group      []string
+	having     string
 }
 
 type join struct {
 	sql string
+}
+
+// Join returns a new statement with JOIN expression 'sql'.
+func (s SelectStatement) RT(rt m.ResultType) SelectStatement {
+	s.resultType = rt
+	return s
 }
 
 // Join returns a new statement with JOIN expression 'sql'.

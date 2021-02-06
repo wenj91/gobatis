@@ -4,21 +4,22 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/m"
 	"reflect"
 )
 
 type resultTypeProc = func(rows *sql.Rows, res interface{}) error
 
-var resSetProcMap = map[ResultType]resultTypeProc{
-	resultTypeMap:     resMapProc,
-	resultTypeMaps:    resMapsProc,
-	resultTypeSlice:   resSliceProc,
-	resultTypeArray:   resSliceProc,
-	resultTypeSlices:  resSlicesProc,
-	resultTypeArrays:  resSlicesProc,
-	resultTypeValue:   resValueProc,
-	resultTypeStructs: resStructsProc,
-	resultTypeStruct:  resStructProc,
+var resSetProcMap = map[m.ResultType]resultTypeProc{
+	m.ResultTypeMap:     resMapProc,
+	m.ResultTypeMaps:    resMapsProc,
+	m.ResultTypeSlice:   resSliceProc,
+	m.ResultTypeArray:   resSliceProc,
+	m.ResultTypeSlices:  resSlicesProc,
+	m.ResultTypeArrays:  resSlicesProc,
+	m.ResultTypeValue:   resValueProc,
+	m.ResultTypeStructs: resStructsProc,
+	m.ResultTypeStruct:  resStructProc,
 }
 
 func resStructProc(rows *sql.Rows, res interface{}) error {

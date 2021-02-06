@@ -10,20 +10,6 @@ import (
 	param2 "github.com/wenj91/gobatis/uti/param"
 )
 
-type ResultType string
-
-const (
-	resultTypeMap     ResultType = "map"     // result set is a map: map[string]interface{}
-	resultTypeMaps    ResultType = "maps"    // result set is a slice, item is map: []map[string]interface{}
-	resultTypeStruct  ResultType = "struct"  // result set is a struct
-	resultTypeStructs ResultType = "structs" // result set is a slice, item is struct
-	resultTypeSlice   ResultType = "slice"   // result set is a value slice, []interface{}
-	resultTypeSlices  ResultType = "slices"  // result set is a value slice, item is value slice, []interface{}
-	resultTypeArray   ResultType = "array"   //
-	resultTypeArrays  ResultType = "arrays"  // result set is a value slice, item is value slice, []interface{}
-	resultTypeValue   ResultType = "value"   // result set is single value
-)
-
 type GoBatis interface {
 	Wrapper(model m.Model) Wrapper
 	// Select 查询数据
@@ -109,11 +95,6 @@ type TX struct {
 }
 
 var _ GoBatis = &TX{}
-
-type Wrapper struct {
-	gb GoBatis
-	wp sb.Wrapper
-}
 
 // Begin TX
 //
