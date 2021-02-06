@@ -144,8 +144,14 @@ func structToMap(s interface{}) map[string]interface{} {
 
 func fieldToVal(field interface{}) (interface{}, bool) {
 	objVal := reflect.ValueOf(field)
-	if objVal.IsNil() {
-		return nil, false
+
+	k := objVal.Kind()
+	switch k {
+	case reflect.Chan, reflect.Func, reflect.Map, reflect.Ptr, reflect.UnsafePointer,
+		reflect.Interface, reflect.Slice:
+		if objVal.IsNil() {
+			return nil, false
+		}
 	}
 
 	if objVal.Kind() == reflect.Ptr {
