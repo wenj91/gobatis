@@ -2,6 +2,8 @@ package gobatis
 
 import (
 	"fmt"
+	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/uti/param"
 	"reflect"
 	"regexp"
 	"strings"
@@ -94,7 +96,7 @@ var _ iSqlNode = &foreachSqlNode{}
 func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 	collection, ok := ctx.params[f.collection]
 	if !ok {
-		LOG.Warn("No collection for foreach tag:%s", f.collection)
+		logger.LOG.Warn("No collection for foreach tag:%s", f.collection)
 		return false
 	}
 
@@ -103,7 +105,7 @@ func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 	val := reflect.ValueOf(collection)
 
 	if val.Kind() != reflect.Slice && val.Kind() != reflect.Array {
-		LOG.Info("Foreach tag collection must be slice or array")
+		logger.LOG.Info("Foreach tag collection must be slice or array")
 		return false
 	}
 
@@ -118,7 +120,7 @@ func (f *foreachSqlNode) build(ctx *dynamicContext) bool {
 		params := make(map[string]interface{})
 		switch v.Kind() {
 		case reflect.Array, reflect.Slice:
-			LOG.Info("Foreach tag collection element must not be slice or array")
+			logger.LOG.Info("Foreach tag collection element must not be slice or array")
 			return false
 		case reflect.Struct:
 			m := f.structToMap(v.Interface())
@@ -210,7 +212,7 @@ func (f *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 	}
 
 	if start != 0 {
-		LOG.Warn("WARN: token not close, SqlStr:" + ctx.sqlStr + " At:" + fmt.Sprintf("%d", start))
+		logger.LOG.Warn("WARN: token not close, SqlStr:" + ctx.sqlStr + " At:" + fmt.Sprintf("%d", start))
 	}
 
 	finalSqlStr += sqlStr
@@ -218,7 +220,7 @@ func (f *foreachSqlNode) tokenHandler(ctx *dynamicContext, index int) {
 }
 
 func (f *foreachSqlNode) structToMap(s interface{}) map[string]interface{} {
-	return structToMap(s)
+	return param.StructToMap(s)
 }
 
 // set node

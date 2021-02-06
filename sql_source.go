@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"github.com/wenj91/gobatis/logger"
 	"strings"
 )
 
@@ -79,7 +80,7 @@ func (ss *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 
 			item, ok := params[itemStr]
 			if !ok {
-				LOG.Error("param %s, not found", itemStr)
+				logger.LOG.Error("param %s, not found", itemStr)
 				panic("params:" + itemStr + " not found")
 			}
 
@@ -92,7 +93,7 @@ func (ss *staticSqlSource) dollarTokenHandler(params map[string]interface{}) {
 	}
 
 	if start != 0 {
-		LOG.Warn("token not close")
+		logger.LOG.Warn("token not close")
 	}
 
 	finalSqlStr += sqlStr
@@ -135,7 +136,7 @@ func (ss *staticSqlSource) tokenHandler(params map[string]interface{}) {
 	}
 
 	if start != 0 {
-		LOG.Warn("token not close")
+		logger.LOG.Warn("token not close")
 	}
 
 	finalSqlStr += sqlStr

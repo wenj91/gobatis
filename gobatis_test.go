@@ -4,23 +4,25 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/na"
 	"testing"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
 type TUser struct {
-	Id       int64      `field:"id"`
-	Name     string     `field:"name"`
-	Password NullString `field:"pwd"`
-	Email    NullString `field:"email"`
-	CrtTm    NullTime   `field:"crtTm"`
+	Id       int64         `field:"id"`
+	Name     string        `field:"name"`
+	Password na.NullString `field:"pwd"`
+	Email    na.NullString `field:"email"`
+	CrtTm    na.NullTime   `field:"crtTm"`
 }
 
 func TestGoBatis(t *testing.T) {
 	Init(NewFileOption())
 	if nil == conf {
-		LOG.Error("db config == nil")
+		logger.LOG.Error("db config == nil")
 		return
 	}
 
@@ -39,7 +41,7 @@ func TestGoBatis(t *testing.T) {
 
 	u := &TUser{
 		Name: "wenj1991",
-		Password: NullString{
+		Password: na.NullString{
 			String: "654321",
 			Valid:  true,
 		},
@@ -51,7 +53,7 @@ func TestGoBatis(t *testing.T) {
 	uu := &TUser{
 		Id:   1,
 		Name: "wenj1993",
-		Password: NullString{
+		Password: na.NullString{
 			String: "654321",
 			Valid:  true,
 		},
@@ -93,7 +95,7 @@ func TestGoBatisWithDB(t *testing.T) {
 	Init(option)
 
 	if nil == conf {
-		LOG.Info("db config == nil")
+		logger.LOG.Info("db config == nil")
 		return
 	}
 
@@ -130,7 +132,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 	Init(option)
 
 	if nil == conf {
-		LOG.Error("db config == nil")
+		logger.LOG.Error("db config == nil")
 		return
 	}
 
@@ -149,7 +151,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 
 	u := &TUser{
 		Name: "wenj1991",
-		Password: NullString{
+		Password: na.NullString{
 			String: "654321",
 			Valid:  true,
 		},
@@ -161,7 +163,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 	uu := &TUser{
 		Id:   1,
 		Name: "wenj1993",
-		Password: NullString{
+		Password: na.NullString{
 			String: "654321",
 			Valid:  true,
 		},

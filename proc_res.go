@@ -3,6 +3,7 @@ package gobatis
 import (
 	"database/sql"
 	"errors"
+	"github.com/wenj91/gobatis/logger"
 	"reflect"
 )
 
@@ -54,7 +55,7 @@ Tips: "(&res)" --> don't forget "&"
 	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
 	if len(arr) > 1 {
 		//return errors.New("Struct query result more than one row")
-		LOG.Warn("Struct query result more than one row")
+		logger.LOG.Warn("Struct query result more than one row")
 		resVal.Elem().Set(reflect.ValueOf(arr[0]))
 	}
 
@@ -64,7 +65,7 @@ Tips: "(&res)" --> don't forget "&"
 	//  还是不处理好呢??? 如果有人看到这里可以提下意见|･ω･｀)
 	if len(arr) == 0 {
 		//return errors.New("No result")
-		LOG.Warn("Struct query result is nil")
+		logger.LOG.Warn("Struct query result is nil")
 	}
 
 	if len(arr) == 1 {
@@ -265,7 +266,7 @@ func rowsToMaps(rows *sql.Rows) ([]interface{}, error) {
 		resMap := make(map[string]interface{})
 		cols, err := rows.Columns()
 		if nil != err {
-			LOG.Error("rows to maps err:%v", err)
+			logger.LOG.Error("rows to maps err:%v", err)
 			return res, err
 		}
 
@@ -277,7 +278,7 @@ func rowsToMaps(rows *sql.Rows) ([]interface{}, error) {
 
 		err = rows.Scan(scanArgs...)
 		if nil != err {
-			LOG.Error("rows scan err:%v", err)
+			logger.LOG.Error("rows scan err:%v", err)
 			return nil, err
 		}
 
@@ -304,7 +305,7 @@ func rowsToSlices(rows *sql.Rows) ([]interface{}, error) {
 		resSlice := make([]interface{}, 0)
 		cols, err := rows.Columns()
 		if nil != err {
-			LOG.Error("rows to slices err:%v", err)
+			logger.LOG.Error("rows to slices err:%v", err)
 			return nil, err
 		}
 
@@ -316,7 +317,7 @@ func rowsToSlices(rows *sql.Rows) ([]interface{}, error) {
 
 		err = rows.Scan(scanArgs...)
 		if nil != err {
-			LOG.Error("rows scan err:%v", err)
+			logger.LOG.Error("rows scan err:%v", err)
 			return nil, err
 		}
 
@@ -353,7 +354,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 	for rows.Next() {
 		cols, err := rows.Columns()
 		if nil != err {
-			LOG.Error("rows.Columns() err:%v", err)
+			logger.LOG.Error("rows.Columns() err:%v", err)
 			return nil, err
 		}
 
@@ -392,7 +393,7 @@ func rowsToStructs(rows *sql.Rows, resultType reflect.Type) ([]interface{}, erro
 						warnInfo := "[WARN] fieldType != dataType, filedName:" + fieldName +
 							" fieldType:" + ft.Name() +
 							" dataType:" + dt.Name()
-						LOG.Warn(warnInfo)
+						logger.LOG.Warn(warnInfo)
 					}
 
 					if isPtr {

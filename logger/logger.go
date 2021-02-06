@@ -1,4 +1,4 @@
-package gobatis
+package logger
 
 import (
 	"fmt"
@@ -30,7 +30,7 @@ func getCallers() []string {
 }
 
 // 如果想定制logger可以实现此接口，否则日志将使用默认打印
-type ILogger interface {
+type Logger interface {
 	SetLevel(level LogLevel)
 	Info(format string, v ...interface{})
 	Debug(format string, v ...interface{})

@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/na"
 	"reflect"
 	"strconv"
 	"time"
@@ -170,7 +172,7 @@ func valToString(data interface{}) string {
 	case reflect.Complex128:
 		s = fmt.Sprint(data.(complex128))
 	default:
-		LOG.Warn("[WARN]no process for type:" + tp.Name())
+		logger.LOG.Warn("[WARN]no process for type:" + tp.Name())
 	}
 	return s
 }
@@ -620,7 +622,7 @@ func valUpcast(data interface{}, typeName string) interface{} {
 func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} {
 	defer func() {
 		if err := recover(); nil != err {
-			LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
+			logger.LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
 		}
 	}()
 
@@ -688,7 +690,7 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 			} else {
 				data = valToString(data)
 			}
-			data = &NullString{String: data.(string), Valid: true}
+			data = &na.NullString{String: data.(string), Valid: true}
 		}
 	case typeName == "NullInt64":
 		if nil != data {
@@ -703,7 +705,7 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 			if err != nil {
 				panic("ParseInt err:" + err.Error())
 			}
-			data = &NullInt64{Int64: i, Valid: true}
+			data = &na.NullInt64{Int64: i, Valid: true}
 		}
 	case typeName == "NullBool":
 		if nil != data {
@@ -714,9 +716,9 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 				data = valToString(data)
 			}
 			if data.(string) == "true" {
-				return NullBool{Bool: true, Valid: true}
+				return na.NullBool{Bool: true, Valid: true}
 			}
-			data = &NullBool{Bool: false, Valid: true}
+			data = &na.NullBool{Bool: false, Valid: true}
 		}
 	case typeName == "NullFloat64":
 		if nil != data {
@@ -732,7 +734,7 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 				panic("ParseFloat err:" + err.Error())
 			}
 
-			data = &NullFloat64{Float64: f64, Valid: true}
+			data = &na.NullFloat64{Float64: f64, Valid: true}
 		}
 	case typeName == "NullTime":
 		if nil != data {
@@ -756,7 +758,7 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 				t = dt
 			}
 
-			data = &NullTime{Time: t, Valid: true}
+			data = &na.NullTime{Time: t, Valid: true}
 		}
 	}
 
@@ -766,7 +768,7 @@ func dataToPtr(data interface{}, tp reflect.Type, fieldName string) interface{} 
 func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interface{} {
 	defer func() {
 		if err := recover(); nil != err {
-			LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
+			logger.LOG.Warn("[WARN] data to field val panic, fieldName:", fieldName, " err:", err)
 		}
 	}()
 
@@ -837,7 +839,7 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 			} else {
 				data = valToString(data)
 			}
-			return NullString{String: data.(string), Valid: true}
+			return na.NullString{String: data.(string), Valid: true}
 		}
 	case typeName == "NullInt64":
 		if nil != data {
@@ -852,7 +854,7 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 			if err != nil {
 				panic("ParseInt err:" + err.Error())
 			}
-			return NullInt64{Int64: i, Valid: true}
+			return na.NullInt64{Int64: i, Valid: true}
 		}
 	case typeName == "NullBool":
 		if nil != data {
@@ -863,9 +865,9 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 				data = valToString(data)
 			}
 			if data.(string) == "true" {
-				return NullBool{Bool: true, Valid: true}
+				return na.NullBool{Bool: true, Valid: true}
 			}
-			return NullBool{Bool: false, Valid: true}
+			return na.NullBool{Bool: false, Valid: true}
 		}
 	case typeName == "NullFloat64":
 		if nil != data {
@@ -881,7 +883,7 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 				panic("ParseFloat err:" + err.Error())
 			}
 
-			return NullFloat64{Float64: f64, Valid: true}
+			return na.NullFloat64{Float64: f64, Valid: true}
 		}
 	case typeName == "NullTime":
 		if nil != data {
@@ -905,7 +907,7 @@ func dataToFieldVal(data interface{}, tp reflect.Type, fieldName string) interfa
 				t = dt
 			}
 
-			return NullTime{Time: t, Valid: true}
+			return na.NullTime{Time: t, Valid: true}
 		}
 	}
 

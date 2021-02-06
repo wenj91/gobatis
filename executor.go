@@ -3,6 +3,7 @@ package gobatis
 import (
 	"context"
 	"errors"
+	"github.com/wenj91/gobatis/logger"
 )
 
 type executor struct {
@@ -16,7 +17,7 @@ func (exec *executor) updateContext(ctx context.Context, ms *mappedStmt, params 
 	}
 
 	if conf.dbConf.ShowSQL {
-		LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
+		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
 	}
 
 	stmt, err := exec.gb.db.PrepareContext(ctx, boundSql.sqlStr)
@@ -49,7 +50,7 @@ func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 	}
 
 	if conf.dbConf.ShowSQL {
-		LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
+		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
 	}
 
 	stmt, err := exec.gb.db.Prepare(boundSql.sqlStr)
@@ -82,7 +83,7 @@ func (exec *executor) queryContext(ctx context.Context, ms *mappedStmt, params m
 	}
 
 	if conf.dbConf.ShowSQL {
-		LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
+		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
 	}
 
 	rows, err := exec.gb.db.QueryContext(ctx, boundSql.sqlStr, paramArr...)
@@ -112,7 +113,7 @@ func (exec *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 	}
 
 	if conf.dbConf.ShowSQL {
-		LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
+		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
 	}
 
 	rows, err := exec.gb.db.Query(boundSql.sqlStr, paramArr...)

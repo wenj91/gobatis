@@ -4,11 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/m"
+	"github.com/wenj91/gobatis/sb"
+	param2 "github.com/wenj91/gobatis/uti/param"
 )
 
 type ResultType string
-
-var LOG ILogger = defLog
 
 const (
 	resultTypeMap     ResultType = "map"     // result set is a map: map[string]interface{}
@@ -23,6 +25,7 @@ const (
 )
 
 type GoBatis interface {
+	Wrapper(model m.Model) Wrapper
 	// Select 查询数据
 	Select(stmt string, param interface{}) func(res interface{}) error
 	// SelectContext 查询数据with context
@@ -83,8 +86,8 @@ func Get(datasource string) *DB {
 	return gb
 }
 
-func SetLogger(log ILogger) {
-	LOG = log
+func SetLogger(log logger.Logger) {
+	logger.LOG = log
 }
 
 type gbBase struct {
@@ -106,6 +109,11 @@ type TX struct {
 }
 
 var _ GoBatis = &TX{}
+
+type Wrapper struct {
+	gb GoBatis
+	wp sb.Wrapper
+}
 
 // Begin TX
 //
@@ -177,7 +185,7 @@ func (d *DB) Transaction(fn func(tx *TX) error) error {
 		if err != nil {
 			err = tx.Rollback()
 			if nil != err {
-				LOG.Error("tx rollback err:#v", err)
+				logger.LOG.Error("tx rollback err:#v", err)
 			}
 		}
 	}()
@@ -207,7 +215,7 @@ func (d *DB) TransactionTX(ctx context.Context, opts *sql.TxOptions, fn func(tx 
 		if err != nil {
 			err = tx.Rollback()
 			if nil != err {
-				LOG.Error("tx rollback err:#v", err)
+				logger.LOG.Error("tx rollback err:#v", err)
 			}
 		}
 	}()
@@ -223,6 +231,13 @@ func (d *DB) TransactionTX(ctx context.Context, opts *sql.TxOptions, fn func(tx 
 	}
 
 	return nil
+}
+
+func (g *gbBase) Wrapper(model m.Model) Wrapper {
+	return Wrapper{
+		gb: g,
+		wp: sb.Model(model),
+	}
 }
 
 // Close db
@@ -289,7 +304,7 @@ func (g *gbBase) Select(stmt string, param interface{}) func(res interface{}) er
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	return func(res interface{}) error {
 		executor := &executor{
@@ -309,7 +324,7 @@ func (g *gbBase) SelectContext(ctx context.Context, stmt string, param interface
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	return func(res interface{}) error {
 		executor := &executor{
@@ -328,7 +343,7 @@ func (g *gbBase) Insert(stmt string, param interface{}) (int64, int64, error) {
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	executor := &executor{
 		gb: g,
@@ -349,7 +364,7 @@ func (g *gbBase) InsertContext(ctx context.Context, stmt string, param interface
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	executor := &executor{
 		gb: g,
@@ -371,7 +386,7 @@ func (g *gbBase) Update(stmt string, param interface{}) (int64, error) {
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	executor := &executor{
 		gb: g,
@@ -392,7 +407,7 @@ func (g *gbBase) UpdateContext(ctx context.Context, stmt string, param interface
 	}
 	ms.dbType = g.dbType
 
-	params := paramProcess(param)
+	params := param2.Process(param)
 
 	executor := &executor{
 		gb: g,

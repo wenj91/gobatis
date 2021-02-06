@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/wenj91/gobatis/na"
 
 	_ "github.com/go-sql-driver/mysql" // 引入驱动
 	"github.com/wenj91/gobatis"        // 引入gobatis
@@ -11,10 +12,10 @@ import (
 
 // 实体结构示例， tag：field为数据库对应字段名称
 type User struct {
-	Id    gobatis.NullInt64  `field:"id"`
-	Name  gobatis.NullString `field:"name"`
-	Email gobatis.NullString `field:"email"`
-	CrtTm gobatis.NullTime   `field:"crtTm"`
+	Id    na.NullInt64  `field:"id"`
+	Name  na.NullString `field:"name"`
+	Email na.NullString `field:"email"`
+	CrtTm na.NullTime   `field:"crtTm"`
 }
 
 func main() {

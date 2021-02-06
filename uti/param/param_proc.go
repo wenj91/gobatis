@@ -1,6 +1,9 @@
-package gobatis
+package param
 
 import (
+	"github.com/wenj91/gobatis/logger"
+	"github.com/wenj91/gobatis/na"
+	"github.com/wenj91/gobatis/uti"
 	"reflect"
 	"strconv"
 	"time"
@@ -11,7 +14,7 @@ import (
 //    param interface{} : sql query params
 // @return
 //    map[string]interface{} : return the convert map
-func paramProcess(param interface{}) map[string]interface{} {
+func Process(param interface{}) map[string]interface{} {
 	v := reflect.ValueOf(param)
 	if v.Kind() == reflect.Ptr {
 		v = v.Elem()
@@ -20,10 +23,10 @@ func paramProcess(param interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	switch v.Kind() {
 	case reflect.Array, reflect.Slice:
-		LOG.Warn("Foreach tag collection element must not be slice or array")
-		res = listToMap(param)
+		logger.LOG.Warn("Foreach tag collection element must not be slice or array")
+		res = ListToMap(param)
 	case reflect.Struct:
-		res = structToMap(param)
+		res = StructToMap(param)
 	case reflect.Map:
 		res = param.(map[string]interface{})
 	default:
@@ -38,7 +41,7 @@ func paramProcess(param interface{}) map[string]interface{} {
 //    arr interface{} : list param
 // @return
 //    map[string]interface{} : return the convert map
-func listToMap(arr interface{}) map[string]interface{} {
+func ListToMap(arr interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	objVal := reflect.ValueOf(arr)
 	if objVal.Kind() != reflect.Array && objVal.Kind() != reflect.Slice {
@@ -59,7 +62,7 @@ func listToMap(arr interface{}) map[string]interface{} {
 //    s interface{} : struct param
 // @return
 //    map[string]interface{} : return the convert map
-func structToMap(s interface{}) map[string]interface{} {
+func StructToMap(s interface{}) map[string]interface{} {
 	objVal := reflect.ValueOf(s)
 	if objVal.Kind() == reflect.Ptr {
 		objVal = objVal.Elem()
@@ -77,7 +80,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	case "NullString":
 		res["0"] = nil
 		if nil != s {
-			ns := s.(NullString)
+			ns := s.(na.NullString)
 			if ns.Valid {
 				str, _ := ns.Value()
 				res["0"] = str
@@ -86,7 +89,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	case "NullInt64":
 		res["0"] = nil
 		if nil != s {
-			ns := s.(NullInt64)
+			ns := s.(na.NullInt64)
 			if ns.Valid {
 				str, _ := ns.Value()
 				res["0"] = str
@@ -95,7 +98,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	case "NullBool":
 		res["0"] = nil
 		if nil != s {
-			ns := s.(NullBool)
+			ns := s.(na.NullBool)
 			if ns.Valid {
 				str, _ := ns.Value()
 				res["0"] = str
@@ -104,7 +107,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	case "NullFloat64":
 		res["0"] = nil
 		if nil != s {
-			ns := s.(NullFloat64)
+			ns := s.(na.NullFloat64)
 			if ns.Valid {
 				str, _ := ns.Value()
 				res["0"] = str
@@ -113,7 +116,7 @@ func structToMap(s interface{}) map[string]interface{} {
 	case "NullTime":
 		res["0"] = nil
 		if nil != s {
-			ns := s.(NullTime)
+			ns := s.(na.NullTime)
 			if ns.Valid {
 				str, _ := ns.Value()
 				res["0"] = str
@@ -143,11 +146,12 @@ func structToMap(s interface{}) map[string]interface{} {
 }
 
 func fieldToVal(field interface{}) (interface{}, bool) {
-	objVal := reflect.ValueOf(field)
-	if objVal.IsNil() {
+	isNil, _ := uti.IsNil(field)
+	if !isNil {
 		return nil, false
 	}
 
+	objVal := reflect.ValueOf(field)
 	if objVal.Kind() == reflect.Ptr {
 		objVal = objVal.Elem()
 	}
@@ -157,31 +161,31 @@ func fieldToVal(field interface{}) (interface{}, bool) {
 	case "Time":
 		return field.(time.Time).Format("2006-01-02 15:04:05"), true
 	case "NullString":
-		ns := field.(NullString)
+		ns := field.(na.NullString)
 		if ns.Valid {
 			str, _ := ns.Value()
 			return str, true
 		}
 	case "NullInt64":
-		ni64 := field.(NullInt64)
+		ni64 := field.(na.NullInt64)
 		if ni64.Valid {
 			i, _ := ni64.Value()
 			return i, true
 		}
 	case "NullBool":
-		nb := field.(NullBool)
+		nb := field.(na.NullBool)
 		if nb.Valid {
 			b, _ := nb.Value()
 			return b, true
 		}
 	case "NullFloat64":
-		nf := field.(NullFloat64)
+		nf := field.(na.NullFloat64)
 		if nf.Valid {
 			f, _ := nf.Value()
 			return f, true
 		}
 	case "NullTime":
-		nt := field.(NullTime)
+		nt := field.(na.NullTime)
 		if nt.Valid {
 			t, _ := nt.Value()
 			return t.(time.Time).Format("2006-01-02 15:04:05"), true

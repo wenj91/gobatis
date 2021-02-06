@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"github.com/wenj91/gobatis/logger"
 	"sync"
 )
 
@@ -11,32 +12,32 @@ type mapperConfig struct {
 	mu          sync.Mutex
 }
 
-func (this *mapperConfig) put(id string, n *node) bool {
-	this.mu.Lock()
-	defer this.mu.Unlock()
+func (mc *mapperConfig) put(id string, n *node) bool {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	if _, ok := this.mappedStmts[id]; ok {
+	if _, ok := mc.mappedStmts[id]; ok {
 		return false
 	}
 
-	this.mappedStmts[id] = n
+	mc.mappedStmts[id] = n
 	return true
 }
 
-func (this *mapperConfig) putSql(id string, n *node) bool {
-	this.mu.Lock()
-	defer this.mu.Unlock()
+func (mc *mapperConfig) putSql(id string, n *node) bool {
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	if _, ok := this.mappedSql[id]; ok {
+	if _, ok := mc.mappedSql[id]; ok {
 		return false
 	}
 
-	this.mappedSql[id] = n
+	mc.mappedSql[id] = n
 	return true
 }
 
-func (this *mapperConfig) getXmlNode(id string) (rootNode *node, resultType string) {
-	rootNode, ok := this.mappedStmts[id]
+func (mc *mapperConfig) getXmlNode(id string) (rootNode *node, resultType string) {
+	rootNode, ok := mc.mappedStmts[id]
 	if !ok {
 		panic("Can not find id:" + id + "mapped stmt")
 	}
@@ -54,28 +55,28 @@ func (this *mapperConfig) getXmlNode(id string) (rootNode *node, resultType stri
 	return
 }
 
-func (this *mapperConfig) getMappedStmt(id string) *mappedStmt {
-	if nil == this.cache {
-		this.cache = make(map[string]*mappedStmt)
+func (mc *mapperConfig) getMappedStmt(id string) *mappedStmt {
+	if nil == mc.cache {
+		mc.cache = make(map[string]*mappedStmt)
 	}
 
-	if st, ok := this.cache[id]; ok {
+	if st, ok := mc.cache[id]; ok {
 		return st
 	}
 
-	this.mu.Lock()
-	defer this.mu.Unlock()
+	mc.mu.Lock()
+	defer mc.mu.Unlock()
 
-	stmt := this.buildSqlNode(id)
-	this.cache[id] = stmt
+	stmt := mc.buildSqlNode(id)
+	mc.cache[id] = stmt
 
 	return stmt
 }
 
-func (this *mapperConfig) buildSqlNode(id string) *mappedStmt {
-	rootNode, resultType := this.getXmlNode(id)
+func (mc *mapperConfig) buildSqlNode(id string) *mappedStmt {
+	rootNode, resultType := mc.getXmlNode(id)
 
-	sn := this.createSqlNode(rootNode.Elements...)
+	sn := mc.createSqlNode(rootNode.Elements...)
 
 	ds := &dynamicSqlSource{}
 	ds.sqlNode = sn[0]
@@ -93,7 +94,7 @@ func (this *mapperConfig) buildSqlNode(id string) *mappedStmt {
 	return stmt
 }
 
-func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
+func (mc *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 	res := make([]iSqlNode, 0)
 	if len(elems) == 0 {
 		res = append(res, &textSqlNode{""})
@@ -116,19 +117,19 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		if n.Name == "include" {
 			id := n.getAttr("refid")
 			id = n.Namespace + id
-			ic, ok := this.mappedSql[id]
+			ic, ok := mc.mappedSql[id]
 			if !ok {
-				LOG.Error("No include sql for id:%s", id)
+				logger.LOG.Error("No include sql for id:%s", id)
 				panic("No include sql for id:" + id)
 			}
 
-			sqlNodes := this.createSqlNode(ic.Elements...)
+			sqlNodes := mc.createSqlNode(ic.Elements...)
 			res = append(res, sqlNodes...)
 			return res
 		}
 
 		if n.Name == "if" || n.Name == "when" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 			ifn := &ifSqlNode{
 				test: n.Attrs["test"].Value,
 			}
@@ -145,7 +146,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		if n.Name == "choose" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 			csNode := &chooseNode{
 				sqlNodes: sqlNodes,
 			}
@@ -154,7 +155,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		if n.Name == "otherwise" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 			owNode := &mixedSqlNode{
 				sqlNodes: sqlNodes,
 			}
@@ -183,7 +184,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 
 			itemAttr, ok := n.Attrs["item"]
 			if !ok {
-				LOG.Error("No attr:`item` for tag:%s", n.Name)
+				logger.LOG.Error("No attr:`item` for tag:%s", n.Name)
 				panic("No attr:`item` for tag:" + n.Name)
 			}
 			item := itemAttr.Value
@@ -196,12 +197,12 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 
 			collectionAttr, ok := n.Attrs["collection"]
 			if !ok {
-				LOG.Error("No attr:`collection` for tag:%s", n.Name)
+				logger.LOG.Error("No attr:`collection` for tag:%s", n.Name)
 				panic("No attr:`collection` for tag:" + n.Name)
 			}
 			collection := collectionAttr.Value
 
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 
 			fn := &foreachSqlNode{
 				open:       open,
@@ -224,7 +225,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		if n.Name == "set" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 			setN := &setSqlNode{
 				sqlNodes: sqlNodes,
 			}
@@ -234,7 +235,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		if n.Name == "trim" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 
 			prefix := ""
 			prefixAttr, ok := n.Attrs["prefix"]
@@ -272,7 +273,7 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 		}
 
 		if n.Name == "where" {
-			sqlNodes := this.createSqlNode(n.Elements...)
+			sqlNodes := mc.createSqlNode(n.Elements...)
 			whereN := &whereSqlNode{
 				sqlNodes: sqlNodes,
 			}
@@ -281,12 +282,12 @@ func (this *mapperConfig) createSqlNode(elems ...element) []iSqlNode {
 			return res
 		}
 
-		LOG.Error("The tag:" + n.Name + "not support, current version only support tag:<if> <when> <choose> <otherwise> <foreach> <set> <trim> <where>")
+		logger.LOG.Error("The tag:" + n.Name + "not support, current version only support tag:<if> <when> <choose> <otherwise> <foreach> <set> <trim> <where>")
 		panic("The tag:" + n.Name + "not support, current version only support tag:<if> <when> <choose> <otherwise> <foreach> <set> <trim> <where>")
 	}
 
 	for _, elem := range elems {
-		sqlNode := this.createSqlNode(elem)
+		sqlNode := mc.createSqlNode(elem)
 		res = append(res, sqlNode...)
 	}
 

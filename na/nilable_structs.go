@@ -1,4 +1,4 @@
-package gobatis
+package na
 
 import (
 	"database/sql"

@@ -1,6 +1,7 @@
 package gobatis
 
 import (
+	"github.com/wenj91/gobatis/logger"
 	"io"
 	"strings"
 
@@ -17,7 +18,7 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 	}
 
 	if rootNode.Name != "mapper" {
-		LOG.Error("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
+		logger.LOG.Error("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
 		panic("Mapper xml must start with `mapper` tag, please check your xml mapperConfig!")
 	}
 
@@ -36,25 +37,25 @@ func buildMapperConfig(r io.Reader) *mapperConfig {
 			switch childNode.Name {
 			case "select", "update", "insert", "delete":
 				if childNode.Id == "" {
-					LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
+					logger.LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 					panic("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 				}
 
 				fid := namespace + childNode.Id
 				if ok := conf.put(fid, &childNode); !ok {
-					LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
+					logger.LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 					panic("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 				}
 
 			case "sql":
 				if childNode.Id == "" {
-					LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
+					logger.LOG.Error("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 					panic("No id for:" + childNode.Name + "Id must be not null, please check your xml mapperConfig!")
 				}
 
 				fid := namespace + childNode.Id
 				if ok := conf.putSql(fid, &childNode); !ok {
-					LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
+					logger.LOG.Error("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 					panic("Repeat id for:" + fid + "Please check your xml mapperConfig!")
 				}
 			}
