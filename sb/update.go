@@ -8,11 +8,11 @@ import (
 
 type updateSet struct {
 	col string
-	arg string
+	arg interface{}
 	raw bool
 }
 
-// UpdateStatement represents an update statement.
+// *UpdateStatement represents an update statement.
 type UpdateStatement struct {
 	model  m.Model
 	sets   []updateSet
@@ -20,14 +20,14 @@ type UpdateStatement struct {
 }
 
 // Set returns a new statement with column 'col' set to value 'val'.
-func (s UpdateStatement) Set(col string, arg string) UpdateStatement {
+func (s *UpdateStatement) Set(col string, arg interface{}) *UpdateStatement {
 	s.sets = append(s.sets, updateSet{col: col, arg: arg, raw: false})
 	return s
 }
 
 // Where returns a new statement with condition 'cond'.
 // Multiple Where() are combined with and.
-func (s UpdateStatement) Where(cond Cond, cs ...Cond) UpdateStatement {
+func (s *UpdateStatement) Where(cond Cond, cs ...Cond) *UpdateStatement {
 	s.wheres = append(s.wheres, cond)
 	if len(cs) > 0 {
 		for _, c := range cs {
@@ -38,7 +38,7 @@ func (s UpdateStatement) Where(cond Cond, cs ...Cond) UpdateStatement {
 }
 
 // Build builds the SQL query. It returns the query and the argument slice.
-func (s UpdateStatement) Build() (query string, args []interface{}) {
+func (s *UpdateStatement) Build() (query string, args []interface{}) {
 	if len(s.sets) == 0 {
 		panic("sqlbuilder: no columns set")
 	}

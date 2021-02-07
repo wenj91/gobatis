@@ -1,4 +1,4 @@
-package m
+package gobatis
 
 type ResultType string
 

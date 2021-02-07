@@ -24,13 +24,13 @@ type InsertStatement struct {
 }
 
 // Return returns a new statement with a RETURNING clause.
-func (s InsertStatement) Return(col string, dest interface{}) InsertStatement {
+func (s *InsertStatement) Return(col string, dest interface{}) *InsertStatement {
 	s.rets = append(s.rets, insertRet{sql: col, dest: dest})
 	return s
 }
 
 // Build builds the SQL query. It returns the SQL query and the argument slice.
-func (s InsertStatement) Build() (query string, args []interface{}) {
+func (s *InsertStatement) Build() (query string, args []interface{}) {
 	q := make([]string, 0)
 	cols, vals := field.Map(s.model)
 	args = append(args, vals...)

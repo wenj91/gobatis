@@ -4,14 +4,17 @@ import (
 	"context"
 	"errors"
 	"github.com/wenj91/gobatis/logger"
-	"github.com/wenj91/gobatis/m"
 )
 
 type executor struct {
 	gb *gbBase
 }
 
-func (exec *executor) wrapperUpdateContext(ctx context.Context, sqlStr string, paramArr []interface{}) (lastInsertId int64, affected int64, err error) {
+func (exec *executor) wrapperUpdateContext(ctx context.Context, sqlStr string, paramMappings []string, paramArr []interface{}) (lastInsertId int64, affected int64, err error) {
+	if conf.dbConf.ShowSQL {
+		logger.LOG.Info("SQL:%s ParamMappings:%s Params:%v", sqlStr, paramMappings, paramArr)
+	}
+
 	stmt, err := exec.gb.db.PrepareContext(ctx, sqlStr)
 	if nil != err {
 		return 0, 0, err
@@ -41,14 +44,14 @@ func (exec *executor) updateContext(ctx context.Context, ms *mappedStmt, params 
 		return 0, 0, err
 	}
 
-	if conf.dbConf.ShowSQL {
-		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
-	}
-
-	return exec.wrapperUpdateContext(ctx, boundSql.sqlStr, paramArr)
+	return exec.wrapperUpdateContext(ctx, boundSql.sqlStr, boundSql.paramMappings, paramArr)
 }
 
-func (exec *executor) wrapperUpdate(sqlStr string, paramArr []interface{}) (lastInsertId int64, affected int64, err error) {
+func (exec *executor) wrapperUpdate(sqlStr string, paramMappings []string, paramArr []interface{}) (lastInsertId int64, affected int64, err error) {
+	if conf.dbConf.ShowSQL {
+		logger.LOG.Info("SQL:%s ParamMappings:%s Params:%v", sqlStr, paramMappings, paramArr)
+	}
+
 	stmt, err := exec.gb.db.Prepare(sqlStr)
 	if nil != err {
 		return 0, 0, err
@@ -78,14 +81,14 @@ func (exec *executor) update(ms *mappedStmt, params map[string]interface{}) (las
 		return 0, 0, err
 	}
 
-	if conf.dbConf.ShowSQL {
-		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
-	}
-
-	return exec.wrapperUpdate(boundSql.sqlStr, paramArr)
+	return exec.wrapperUpdate(boundSql.sqlStr, boundSql.paramMappings, paramArr)
 }
 
-func (exec *executor) wrapperQueryContext(ctx context.Context, sqlStr string, rt m.ResultType, paramArr []interface{}, res interface{}) error {
+func (exec *executor) wrapperQueryContext(ctx context.Context, sqlStr string, rt ResultType, paramMappings []string, paramArr []interface{}, res interface{}) error {
+	if conf.dbConf.ShowSQL {
+		logger.LOG.Info("SQL:%s ParamMappings:%s Params:%v", sqlStr, paramMappings, paramArr)
+	}
+
 	rows, err := exec.gb.db.QueryContext(ctx, sqlStr, paramArr...)
 	if nil != err {
 		return err
@@ -112,14 +115,14 @@ func (exec *executor) queryContext(ctx context.Context, ms *mappedStmt, params m
 		return err
 	}
 
-	if conf.dbConf.ShowSQL {
-		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
-	}
-
-	return exec.wrapperQueryContext(ctx, boundSql.sqlStr, ms.resultType, paramArr, res)
+	return exec.wrapperQueryContext(ctx, boundSql.sqlStr, ms.resultType, boundSql.paramMappings, paramArr, res)
 }
 
-func (exec *executor) wrapperQuery(sqlStr string, rt m.ResultType, paramArr []interface{}, res interface{}) error {
+func (exec *executor) wrapperQuery(sqlStr string, rt ResultType, paramMappings []string, paramArr []interface{}, res interface{}) error {
+	if conf.dbConf.ShowSQL {
+		logger.LOG.Info("SQL:%s ParamMappings:%s Params:%v", sqlStr, paramMappings, paramArr)
+	}
+
 	rows, err := exec.gb.db.Query(sqlStr, paramArr...)
 	if nil != err {
 		return err
@@ -146,11 +149,7 @@ func (exec *executor) query(ms *mappedStmt, params map[string]interface{}, res i
 		return err
 	}
 
-	if conf.dbConf.ShowSQL {
-		logger.LOG.Info("SQL:%s\nParamMappings:%s\nParams:%v", boundSql.sqlStr, boundSql.paramMappings, paramArr)
-	}
-
-	return exec.wrapperQuery(boundSql.sqlStr, ms.resultType, paramArr, res)
+	return exec.wrapperQuery(boundSql.sqlStr, ms.resultType, boundSql.paramMappings, paramArr, res)
 }
 
 func paramProc(ms *mappedStmt, params map[string]interface{}) (boundSql *boundSql, paramArr []interface{}, err error) {

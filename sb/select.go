@@ -17,31 +17,30 @@ func Select(cols ...string) SelectStatement {
 
 // SelectStatement represents a SELECT statement.
 type SelectStatement struct {
-	model      m.Model
-	resultType m.ResultType
-	selects    []string
-	joins      []join
-	wheres     []Cond
-	lock       bool
-	limit      *int
-	offset     *int
-	orders     []Od
-	group      []string
-	having     string
+	model   m.Model
+	selects []string
+	joins   []join
+	wheres  []Cond
+	lock    bool
+	limit   *int
+	offset  *int
+	orders  []Od
+	group   []string
+	having  string
 }
 
 type join struct {
 	sql string
 }
 
-// Join returns a new statement with JOIN expression 'sql'.
-func (s SelectStatement) RT(rt m.ResultType) SelectStatement {
-	s.resultType = rt
-	return s
+func (s *SelectStatement) Cols(cols ...string) {
+	if len(cols) > 0 {
+		s.selects = append(s.selects, cols...)
+	}
 }
 
 // Join returns a new statement with JOIN expression 'sql'.
-func (s SelectStatement) Join(sql string, sq ...string) SelectStatement {
+func (s *SelectStatement) Join(sql string, sq ...string) *SelectStatement {
 	s.joins = append(s.joins, join{sql})
 	for _, ss := range sq {
 		s.joins = append(s.joins, join{ss})
@@ -51,7 +50,7 @@ func (s SelectStatement) Join(sql string, sq ...string) SelectStatement {
 
 // Where returns a new statement with condition 'cond'. Multiple conditions
 // are combined with AND.
-func (s SelectStatement) Where(c Cond, cond ...Cond) SelectStatement {
+func (s *SelectStatement) Where(c Cond, cond ...Cond) *SelectStatement {
 	s.wheres = append(s.wheres, c)
 
 	if len(cond) > 0 {
@@ -64,20 +63,20 @@ func (s SelectStatement) Where(c Cond, cond ...Cond) SelectStatement {
 }
 
 // Limit returns a new statement with the limit set to 'limit'.
-func (s SelectStatement) Limit(limit int) SelectStatement {
+func (s *SelectStatement) Limit(limit int) *SelectStatement {
 	s.limit = &limit
 	return s
 }
 
 // Offset returns a new statement with the offset set to 'offset'.
-func (s SelectStatement) Offset(offset int) SelectStatement {
+func (s *SelectStatement) Offset(offset int) *SelectStatement {
 	s.offset = &offset
 	return s
 }
 
 // Od returns a new statement with ordering 'orders'.
 // Only the last Od() is used.
-func (s SelectStatement) Order(order Od, o ...Od) SelectStatement {
+func (s *SelectStatement) Order(order Od, o ...Od) *SelectStatement {
 	s.orders = append(s.orders, order)
 	if len(o) > 0 {
 		s.orders = append(s.orders, o...)
@@ -88,7 +87,7 @@ func (s SelectStatement) Order(order Od, o ...Od) SelectStatement {
 
 // Group returns a new statement with grouping 'group'.
 // Only the last Group() is used.
-func (s SelectStatement) Group(group string, gr ...string) SelectStatement {
+func (s *SelectStatement) Group(group string, gr ...string) *SelectStatement {
 	s.group = append(s.group, group)
 	if len(gr) > 0 {
 		s.group = append(s.group, gr...)
@@ -99,20 +98,20 @@ func (s SelectStatement) Group(group string, gr ...string) SelectStatement {
 
 // Having returns a new statement with HAVING condition 'having'.
 // Only the last Having() is used.
-func (s SelectStatement) Having(having string) SelectStatement {
+func (s *SelectStatement) Having(having string) *SelectStatement {
 	s.having = having
 	return s
 }
 
 // Lock returns a new statement with FOR UPDATE locking.
-func (s SelectStatement) Lock() SelectStatement {
+func (s *SelectStatement) Lock() *SelectStatement {
 	s.lock = true
 	return s
 }
 
 // Build builds the SQL query. It returns the query, the argument slice,
 // and the destination slice.
-func (s SelectStatement) Build() (query string, args []interface{}) {
+func (s *SelectStatement) Build() (query string, args []interface{}) {
 	if nil == s.model {
 		panic("model must not be nil")
 	}
