@@ -11,6 +11,7 @@ import (
 )
 
 type GoBatis interface {
+	// Wrapper sql builder适配器
 	Wrapper(model m.Model) Wrapper
 	// Select 查询数据
 	Select(stmt string, param interface{}) func(res interface{}) error
