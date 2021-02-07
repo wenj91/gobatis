@@ -8,8 +8,8 @@ import (
 func buildCond(cs []Cond) (string, []interface{}) {
 	vals := make([]interface{}, 0)
 	sqls := make([]string, 0)
-	for _, where := range cs {
-		s, v := where.expr()
+	for _, c := range cs {
+		s, v := c.expr()
 		sql := "(" + s + ")"
 		sqls = append(sqls, sql)
 		vals = append(vals, v...)
@@ -21,10 +21,10 @@ func buildCond(cs []Cond) (string, []interface{}) {
 	return "", vals
 }
 
-type op int
+type operator int
 
 const (
-	eq op = iota
+	eq operator = iota
 	ne
 	gt
 	ge
@@ -48,16 +48,16 @@ type Cond interface {
 }
 
 type defaultCond struct {
-	operator op
-	field    string
-	val      interface{}
-	btStart  string
-	btEnd    string
-	in       []interface{}
+	op      operator
+	field   string
+	val     interface{}
+	btStart string
+	btEnd   string
+	in      []interface{}
 }
 
 func (e defaultCond) expr() (expr string, params []interface{}) {
-	switch e.operator {
+	switch e.op {
 	case eq:
 		return fmt.Sprintf("%s = ?", e.field), []interface{}{e.val}
 	case ne:
@@ -117,9 +117,9 @@ func Eq(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: eq,
-		field:    field,
-		val:      val,
+		op:    eq,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -132,9 +132,9 @@ func Ne(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: ne,
-		field:    field,
-		val:      val,
+		op:    ne,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -147,9 +147,9 @@ func Gt(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: gt,
-		field:    field,
-		val:      val,
+		op:    gt,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -162,9 +162,9 @@ func Ge(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: ge,
-		field:    field,
-		val:      val,
+		op:    ge,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -177,9 +177,9 @@ func Lt(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: lt,
-		field:    field,
-		val:      val,
+		op:    lt,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -192,9 +192,9 @@ func Le(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: le,
-		field:    field,
-		val:      val,
+		op:    le,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -207,10 +207,10 @@ func Between(field string, btStart, btEnd string, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: between,
-		field:    field,
-		btStart:  btStart,
-		btEnd:    btEnd,
+		op:      between,
+		field:   field,
+		btStart: btStart,
+		btEnd:   btEnd,
 	}
 }
 
@@ -223,10 +223,10 @@ func NotBetween(field string, btStart, btEnd string, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: notBetween,
-		field:    field,
-		btStart:  btStart,
-		btEnd:    btEnd,
+		op:      notBetween,
+		field:   field,
+		btStart: btStart,
+		btEnd:   btEnd,
 	}
 }
 
@@ -239,9 +239,9 @@ func Like(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: like,
-		field:    field,
-		val:      val,
+		op:    like,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -254,9 +254,9 @@ func NotLike(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: notLike,
-		field:    field,
-		val:      val,
+		op:    notLike,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -269,9 +269,9 @@ func LikeLeft(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: likeLeft,
-		field:    field,
-		val:      val,
+		op:    likeLeft,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -284,9 +284,9 @@ func LikeRight(field string, val interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: likeRight,
-		field:    field,
-		val:      val,
+		op:    likeRight,
+		field: field,
+		val:   val,
 	}
 }
 
@@ -299,8 +299,8 @@ func IsNull(field string, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: isNull,
-		field:    field,
+		op:    isNull,
+		field: field,
 	}
 }
 
@@ -313,8 +313,8 @@ func IsNotNull(field string, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: isNotNull,
-		field:    field,
+		op:    isNotNull,
+		field: field,
 	}
 }
 
@@ -327,9 +327,9 @@ func In(field string, vals []interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: in,
-		field:    field,
-		in:       vals,
+		op:    in,
+		field: field,
+		in:    vals,
 	}
 }
 
@@ -342,8 +342,8 @@ func NotIn(field string, vals []interface{}, cond ...bool) Cond {
 	}
 
 	return &defaultCond{
-		operator: notIn,
-		field:    field,
-		in:       vals,
+		op:    notIn,
+		field: field,
+		in:    vals,
 	}
 }
