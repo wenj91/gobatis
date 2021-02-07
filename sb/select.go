@@ -20,7 +20,7 @@ type SelectStatement struct {
 	model   m.Model
 	selects []string
 	joins   []join
-	wheres  []Cond
+	wheres  []cond
 	lock    bool
 	limit   *int
 	offset  *int
@@ -50,7 +50,7 @@ func (s *SelectStatement) Join(sql string, sq ...string) *SelectStatement {
 
 // Where returns a new statement with condition 'cond'. Multiple conditions
 // are combined with AND.
-func (s *SelectStatement) Where(c Cond, cond ...Cond) *SelectStatement {
+func (s *SelectStatement) Where(c cond, cond ...cond) *SelectStatement {
 	s.wheres = append(s.wheres, c)
 
 	if len(cond) > 0 {

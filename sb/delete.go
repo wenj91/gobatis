@@ -7,12 +7,12 @@ import (
 // DeleteStatement represents a DELETE statement.
 type DeleteStatement struct {
 	model  m.Model
-	wheres []Cond
+	wheres []cond
 }
 
 // Where returns a new statement with condition 'cond'.
 // Multiple Where() are combined with AND.
-func (s *DeleteStatement) Where(cond Cond, cs ...Cond) *DeleteStatement {
+func (s *DeleteStatement) Where(cond cond, cs ...cond) *DeleteStatement {
 	s.wheres = append(s.wheres, cond)
 	if len(cs) > 0 {
 		for _, c := range cs {

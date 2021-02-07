@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-func buildCond(cs []Cond) (string, []interface{}) {
+func buildCond(cs []cond) (string, []interface{}) {
 	vals := make([]interface{}, 0)
 	sqls := make([]string, 0)
 	for _, c := range cs {
@@ -43,7 +43,7 @@ const (
 )
 
 // eq ne gt ge lt le between notBetween like notLike likeLeft likeRight isNull isNotNull in notIn
-type Cond interface {
+type cond interface {
 	expr() (expr string, params []interface{})
 }
 
@@ -79,9 +79,9 @@ func (e defaultCond) expr() (expr string, params []interface{}) {
 	case notLike:
 		return fmt.Sprintf("%s not like concat('%%', ?, '%%')", e.field), []interface{}{e.val}
 	case likeLeft:
-		return fmt.Sprintf("%s not like concat('%%', ?)", e.field), []interface{}{e.val}
+		return fmt.Sprintf("%s like concat('%%', ?)", e.field), []interface{}{e.val}
 	case likeRight:
-		return fmt.Sprintf("%s not like concat(?, '%%')", e.field), []interface{}{e.val}
+		return fmt.Sprintf("%s like concat(?, '%%')", e.field), []interface{}{e.val}
 	case isNull:
 		return fmt.Sprintf("%s is null", e.field), []interface{}{e.val}
 	case isNotNull:
@@ -108,7 +108,7 @@ func (e defaultCond) expr() (expr string, params []interface{}) {
 	return "", []interface{}{}
 }
 
-func Eq(field string, val interface{}, cond ...bool) Cond {
+func Eq(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -123,7 +123,7 @@ func Eq(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Ne(field string, val interface{}, cond ...bool) Cond {
+func Ne(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -138,7 +138,7 @@ func Ne(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Gt(field string, val interface{}, cond ...bool) Cond {
+func Gt(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -153,7 +153,7 @@ func Gt(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Ge(field string, val interface{}, cond ...bool) Cond {
+func Ge(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -168,7 +168,7 @@ func Ge(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Lt(field string, val interface{}, cond ...bool) Cond {
+func Lt(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -183,7 +183,7 @@ func Lt(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Le(field string, val interface{}, cond ...bool) Cond {
+func Le(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -198,7 +198,7 @@ func Le(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func Between(field string, btStart, btEnd string, cond ...bool) Cond {
+func Between(field string, btStart, btEnd string, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -214,7 +214,7 @@ func Between(field string, btStart, btEnd string, cond ...bool) Cond {
 	}
 }
 
-func NotBetween(field string, btStart, btEnd string, cond ...bool) Cond {
+func NotBetween(field string, btStart, btEnd string, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -230,7 +230,7 @@ func NotBetween(field string, btStart, btEnd string, cond ...bool) Cond {
 	}
 }
 
-func Like(field string, val interface{}, cond ...bool) Cond {
+func Like(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -245,7 +245,7 @@ func Like(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func NotLike(field string, val interface{}, cond ...bool) Cond {
+func NotLike(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -260,7 +260,7 @@ func NotLike(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func LikeLeft(field string, val interface{}, cond ...bool) Cond {
+func LikeLeft(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -275,7 +275,7 @@ func LikeLeft(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func LikeRight(field string, val interface{}, cond ...bool) Cond {
+func LikeRight(field string, val interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -290,7 +290,7 @@ func LikeRight(field string, val interface{}, cond ...bool) Cond {
 	}
 }
 
-func IsNull(field string, cond ...bool) Cond {
+func IsNull(field string, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -304,7 +304,7 @@ func IsNull(field string, cond ...bool) Cond {
 	}
 }
 
-func IsNotNull(field string, cond ...bool) Cond {
+func IsNotNull(field string, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -318,7 +318,7 @@ func IsNotNull(field string, cond ...bool) Cond {
 	}
 }
 
-func In(field string, vals []interface{}, cond ...bool) Cond {
+func In(field string, vals []interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {
@@ -333,7 +333,7 @@ func In(field string, vals []interface{}, cond ...bool) Cond {
 	}
 }
 
-func NotIn(field string, vals []interface{}, cond ...bool) Cond {
+func NotIn(field string, vals []interface{}, cond ...bool) cond {
 	if len(cond) > 0 {
 		b := cond[0]
 		if !b {

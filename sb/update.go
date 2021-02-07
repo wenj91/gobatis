@@ -16,7 +16,7 @@ type updateSet struct {
 type UpdateStatement struct {
 	model  m.Model
 	sets   []updateSet
-	wheres []Cond
+	wheres []cond
 }
 
 // Set returns a new statement with column 'col' set to value 'val'.
@@ -27,7 +27,7 @@ func (s *UpdateStatement) Set(col string, arg interface{}) *UpdateStatement {
 
 // Where returns a new statement with condition 'cond'.
 // Multiple Where() are combined with and.
-func (s *UpdateStatement) Where(cond Cond, cs ...Cond) *UpdateStatement {
+func (s *UpdateStatement) Where(cond cond, cs ...cond) *UpdateStatement {
 	s.wheres = append(s.wheres, cond)
 	if len(cs) > 0 {
 		for _, c := range cs {
