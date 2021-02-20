@@ -11,8 +11,38 @@ type Wrapper struct {
 	wp sb.Wrapper
 }
 
-func (w Wrapper) ResultType(rt string) Wrapper {
-	w.rt = rt
+func (w Wrapper) ToMap() Wrapper {
+	w.rt = "map"
+	return w
+}
+
+func (w Wrapper) ToMaps() Wrapper {
+	w.rt = "maps"
+	return w
+}
+
+func (w Wrapper) ToStruct() Wrapper {
+	w.rt = "struct"
+	return w
+}
+
+func (w Wrapper) ToStructs() Wrapper {
+	w.rt = "structs"
+	return w
+}
+
+func (w Wrapper) ToArray() Wrapper {
+	w.rt = "array"
+	return w
+}
+
+func (w Wrapper) ToArrays() Wrapper {
+	w.rt = "arrays"
+	return w
+}
+
+func (w Wrapper) ToValue() Wrapper {
+	w.rt = "value"
 	return w
 }
 

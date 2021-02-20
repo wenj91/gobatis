@@ -49,7 +49,7 @@ func main() {
 	fmt.Printf("insert insertId:%d affected:%d err:%v\n", insertId, affected, err)
 
 	m := make([]map[string]interface{}, 0)
-	err = gb.Wrapper(u).ResultType("maps").Select(func(s *sb.SelectStatement) {
+	err = gb.Wrapper(u).ToMaps().Select(func(s *sb.SelectStatement) {
 		s.Where(sb.Eq("id", 10))
 	})(&m)
 	fmt.Printf("select result:%v err:%v\n", m, err)
