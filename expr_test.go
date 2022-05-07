@@ -2,8 +2,9 @@ package gobatis
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 type TestUser struct {
@@ -44,6 +45,8 @@ func TestExpr_eval(t *testing.T) {
 		"val != nil and val == ''",
 		"arr != nil and len(arr) > 0",
 		"arr2 != nil and len(arr2) > 0",
+		"$blank(val)",
+		"!$blank(val)",
 	}
 
 	for i, ex := range expression {
@@ -55,9 +58,9 @@ func TestExpr_eval(t *testing.T) {
 
 func assertExpr(t *testing.T, i int, ok bool, expr string) {
 	switch i {
-	case 0, 3, 4, 6, 8, 9, 12, 14, 17, 22: // false
+	case 0, 3, 4, 6, 8, 9, 12, 14, 17, 22, 24: // false
 		assert.True(t, !ok, "Expr:"+expr+" Result:true")
-	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19, 20, 21: // true
+	case 1, 2, 5, 7, 10, 11, 13, 15, 16, 18, 19, 20, 21, 23: // true
 		assert.True(t, ok, "Expr:"+expr+" Result:false")
 	}
 }
