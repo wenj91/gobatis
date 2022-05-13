@@ -143,21 +143,21 @@ value: 则数据库查询结果为单个数值
     <select id="queryStructsByCond" resultType="structs">
          SELECT id, name, crtTm, pwd, email FROM user
          <where>
-             <if test="Name != nil and Name != ''">and name = #{Name}</if>
+             <if test="!$blank(Name)">and name = #{Name}</if>
          </where>
          order by id
     </select>
      <select id="queryStructsByCond2" resultType="structs">
          SELECT id, name, crtTm, pwd, email FROM user
          <trim prefixOverrides="and" prefix="where" suffixOverrides="," suffix="and 1=1">
-              <if test="Name != nil and Name != ''">and name = #{Name}</if>
+              <if test="!$blank(Name)">and name = #{Name}</if>
          </trim>
          order by id
     </select>
     <update id="updateByCond">
         update user
         <set>
-            <if test="Name != nil and Name2 != ''">name = #{Name},</if>
+            <if test="!$blank(Name) and !$blank(Name2)">name = #{Name},</if>
         </set>
         where id = #{Id}
     </update>
