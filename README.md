@@ -1,6 +1,23 @@
 # gobatis
 
-目前代码都是基于mysql编写测试的,其他数据库暂时还未做兼容处理
+目前代码都是基于类mysql数据库编写测试的,其他数据库暂时还未做兼容处理
+
+- [x] 支持数据库
+  - [x] mysql
+  - [x] tidb
+  - [x] mariadb
+  - [ ] postgres
+  - [ ] sqlite
+- [x] 基础操作
+  - [x] query
+  - [x] insert
+  - [x] update
+  - [x] delete
+
+## ToDo
+
+- 增加更多易用表达式指令，目前已有`$blank`指令用于判别字符串是否为空的指令，比如判读name为空串： test="$blank(name)"
+- 升级go版本，根据泛型改造项目
 
 ## gobatis接口
 
