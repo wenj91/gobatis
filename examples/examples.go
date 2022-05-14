@@ -37,10 +37,10 @@ func main() {
 	mapRes := make(map[string]interface{})
 	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
 	// 查询参数可以是map，也可以是数组，也可以是实体结构
-	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
+	_, err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 
 	mapRes2 := make(map[string]interface{})
-	err = gb.SelectContext(context.TODO(), "userMapper.findMapById", map[string]interface{}{"id": 4})(mapRes2)
+	_, err = gb.SelectContext(context.TODO(), "userMapper.findMapById", map[string]interface{}{"id": 4})(mapRes2)
 	fmt.Println("userMapper.findMapById-->", mapRes2, err)
 }

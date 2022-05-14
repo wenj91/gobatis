@@ -24,9 +24,9 @@ const (
 
 type GoBatis interface {
 	// Select 查询数据
-	Select(stmt string, param interface{}) func(res interface{}) error
+	Select(stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error)
 	// SelectContext 查询数据with context
-	SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error
+	SelectContext(ctx context.Context, stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error)
 	// Insert 插入数据
 	Insert(stmt string, param interface{}) (lastInsertId int64, affected int64, err error)
 	// InsertContext 插入数据with context
@@ -85,6 +85,26 @@ func Get(datasource string) *DB {
 
 func SetLogger(log ILogger) {
 	LOG = log
+}
+
+type rowBounds struct {
+	offset int
+	limit  int
+}
+
+func RowBounds(offset int, limit int) *rowBounds {
+	if offset < 0 {
+		offset = 0
+	}
+
+	if limit < 0 {
+		limit = 0
+	}
+
+	return &rowBounds{
+		offset: offset,
+		limit:  limit,
+	}
 }
 
 type gbBase struct {
@@ -280,43 +300,43 @@ func (t *TX) Rollback() error {
 }
 
 // reference from https://github.com/yinshuwei/osm/blob/master/osm.go end
-func (g *gbBase) Select(stmt string, param interface{}) func(res interface{}) error {
+func (g *gbBase) Select(stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error) {
 	ms := g.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
-		return func(res interface{}) error {
-			return errors.New("Mapped statement not found:" + stmt)
+		return func(res interface{}) (int64, error) {
+			return 0, errors.New("Mapped statement not found:" + stmt)
 		}
 	}
 	ms.dbType = g.dbType
 
 	params := paramProcess(param)
 
-	return func(res interface{}) error {
+	return func(res interface{}) (int64, error) {
 		executor := &executor{
 			gb: g,
 		}
-		err := executor.query(ms, params, res)
-		return err
+		count, err := executor.query(ms, params, res, rowBound...)
+		return count, err
 	}
 }
 
-func (g *gbBase) SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error {
+func (g *gbBase) SelectContext(ctx context.Context, stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error) {
 	ms := g.config.mapperConf.getMappedStmt(stmt)
 	if nil == ms {
-		return func(res interface{}) error {
-			return errors.New("Mapped statement not found:" + stmt)
+		return func(res interface{}) (int64, error) {
+			return 0, errors.New("Mapped statement not found:" + stmt)
 		}
 	}
 	ms.dbType = g.dbType
 
 	params := paramProcess(param)
 
-	return func(res interface{}) error {
+	return func(res interface{}) (int64, error) {
 		executor := &executor{
 			gb: g,
 		}
-		err := executor.queryContext(ctx, ms, params, res)
-		return err
+		count, err := executor.queryContext(ctx, ms, params, res)
+		return count, err
 	}
 }
 

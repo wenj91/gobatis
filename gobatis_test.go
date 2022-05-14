@@ -3,6 +3,7 @@ package gobatis
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -15,6 +16,12 @@ type TUser struct {
 	Password NullString `field:"pwd"`
 	Email    NullString `field:"email"`
 	CrtTm    NullTime   `field:"crtTm"`
+}
+
+// TUser to string
+func (u *TUser) String() string {
+	bs, _ := json.Marshal(u)
+	return string(bs)
 }
 
 func TestGoBatis(t *testing.T) {
@@ -31,7 +38,7 @@ func TestGoBatis(t *testing.T) {
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result *TUser
-	err := gb.Select("userMapper.findById", map[string]interface{}{
+	_, err := gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
@@ -67,12 +74,12 @@ func TestGoBatis(t *testing.T) {
 
 	// test where
 	res := make([]*TUser, 0)
-	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	_, err = gb.Select("userMapper.queryStructsByCond", param)(&res)
 	fmt.Println("queryStructsByCond", res, err)
 
 	// test trim
 	res2 := make([]*TUser, 0)
-	err = gb.Select("userMapper.queryStructsByCond2", param)(&res2)
+	_, err = gb.Select("userMapper.queryStructsByCond2", param)(&res2)
 	fmt.Println("queryStructsByCond", res2, err)
 
 	affected, err = gb.Delete("userMapper.deleteById", map[string]interface{}{
@@ -100,17 +107,32 @@ func TestGoBatisWithDB(t *testing.T) {
 	gb := Get("ds")
 
 	var result *TUser
-	err := gb.Select("userMapper.findById", map[string]interface{}{
+	_, err := gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
 	fmt.Println("result:", result, "err:", err)
 
 	var result2 *TUser
-	err = gb.SelectContext(context.Background(), "userMapper.findById", map[string]interface{}{
+	_, err = gb.SelectContext(context.Background(), "userMapper.findById", map[string]interface{}{
 		"id": 4,
 	})(&result2)
 	fmt.Println("result:", result2, "err:", err)
+
+	var result3 *TUser
+	cnt, err := gb.Select("userMapper.findById", map[string]interface{}{
+		"id": 2,
+	}, RowBounds(0, 10))(&result3)
+	fmt.Println("result:", result3, "cnt:", cnt, "err:", err)
+
+	// queryStructsByCond with count
+	param := &TUser{
+		// Name: "",
+	}
+
+	res := make([]*TUser, 0)
+	cnt2, err := gb.Select("userMapper.queryStructsByCond", param, RowBounds(0, 100))(&res)
+	fmt.Println("queryStructsByCond", cnt2, res, err)
 }
 
 func TestGoBatisWithCodeConf(t *testing.T) {
@@ -141,7 +163,7 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 	//var result interface{}
 	//result := make([]TUser, 0)
 	var result *TUser
-	err := gb.Select("userMapper.findById", map[string]interface{}{
+	_, err := gb.Select("userMapper.findById", map[string]interface{}{
 		"id": 2,
 	})(&result)
 
@@ -177,12 +199,12 @@ func TestGoBatisWithCodeConf(t *testing.T) {
 
 	// test where
 	res := make([]*TUser, 0)
-	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	_, err = gb.Select("userMapper.queryStructsByCond", param)(&res)
 	fmt.Println("queryStructsByCond", res, err)
 
 	// test trim
 	res2 := make([]*TUser, 0)
-	err = gb.Select("userMapper.queryStructsByCond2", param)(&res2)
+	_, err = gb.Select("userMapper.queryStructsByCond2", param)(&res2)
 	fmt.Println("queryStructsByCond", res2, err)
 
 	affected, err = gb.Delete("userMapper.deleteById", map[string]interface{}{
