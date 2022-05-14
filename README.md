@@ -260,11 +260,11 @@ func main() {
 	})(&res)
 	fmt.Println("queryStructsByCond", res, err)
 
-	// ${id} with count
+	// ${id} with count, 传入RowBounds(0, 100)即可返回count总数
 	res = make([]*User, 0)
 	cnt, err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
 		"id":"id",
-	})(&res)
+	}, RowBounds(0, 100))(&res)
 	fmt.Println("queryStructsByCond", cnt, res, err)
 
 
