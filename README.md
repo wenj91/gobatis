@@ -7,21 +7,21 @@
 ```go
 type GoBatis interface {
 	// Select 查询数据
-	Select(stmt string, param interface{}) func(res interface{}) error
+	Select(stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error)
 	// SelectContext 查询数据with context
-	SelectContext(ctx context.Context, stmt string, param interface{}) func(res interface{}) error
+	SelectContext(ctx context.Context, stmt string, param interface{}, rowBound ...*rowBounds) func(res interface{}) (int64, error)
 	// Insert 插入数据
-	Insert(stmt string, param interface{}) (int64, int64, error)
+	Insert(stmt string, param interface{}) (lastInsertId int64, affected int64, err error)
 	// InsertContext 插入数据with context
-	InsertContext(ctx context.Context, stmt string, param interface{}) (int64, int64, error)
+	InsertContext(ctx context.Context, stmt string, param interface{}) (lastInsertId int64, affected int64, err error)
 	// Update 更新数据
-	Update(stmt string, param interface{}) (int64, error)
+	Update(stmt string, param interface{}) (affected int64, err error)
 	// UpdateContext 更新数据with context
-	UpdateContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+	UpdateContext(ctx context.Context, stmt string, param interface{}) (affected int64, err error)
 	// Delete 刪除数据
-	Delete(stmt string, param interface{}) (int64, error)
+	Delete(stmt string, param interface{}) (affected int64, err error)
 	// DeleteContext 刪除数据with context
-	DeleteContext(ctx context.Context, stmt string, param interface{}) (int64, error)
+	DeleteContext(ctx context.Context, stmt string, param interface{}) (affected int64, err error)
 }
 ```
 
@@ -179,6 +179,13 @@ type User struct {
 	CrtTm gobatis.NullTime   `field:"crtTm"`
 }
 
+
+// User to string
+func (u *User) String() string {
+	bs, _ := json.Marshal(u)
+	return string(bs)
+}
+
 func main() {
 	// 初始化db，参数为db.yml路径，如：db.yml	
 	gobatis.Init(gobatis.NewFileOption("db.yml"))
@@ -190,18 +197,18 @@ func main() {
 	mapRes := make(map[string]interface{})
 	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
 	// 查询参数可以是map，也可以是数组，也可以是实体结构
-	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
+	_, err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 
 	// 根据传入实体查询对象
 	param := User{Id: gobatis.NullInt64{Int64: 1, Valid: true}}
 	var structRes *User
-	err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
+	_, err = gb.Select("userMapper.findStructByStruct", param)(&structRes)
 	fmt.Println("userMapper.findStructByStruct-->", structRes, err)
 
 	// 查询实体列表
 	structsRes := make([]*User, 0)
-	err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
+	_, err = gb.Select("userMapper.queryStructs", map[string]interface{}{})(&structsRes)
 	fmt.Println("userMapper.queryStructs-->", structsRes, err)
 
 	param = User{
@@ -216,30 +223,38 @@ func main() {
 	param = User{Name: gobatis.NullString{String: "wenj1993", Valid: true}}
 	// where tag
 	res := make([]*User, 0)
-	err = gb.Select("userMapper.queryStructsByCond", param)(&res)
+	_, err = gb.Select("userMapper.queryStructsByCond", param)(&res)
 	fmt.Println("queryStructsByCond", res, err)
 
 	// trim tag
 	res = make([]*User, 0)
-	err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
+	_, err = gb.Select("userMapper.queryStructsByCond2", param)(&res)
 	fmt.Println("queryStructsByCond2", res, err)
 
 	// include tag
 	ms := make([]map[string]interface{}, 0)
-	err = gb.Select("userMapper.findIncludeMaps", nil)(&ms)
+	_, err = gb.Select("userMapper.findIncludeMaps", nil)(&ms)
 	fmt.Println("userMapper.findIncludeMaps-->", ms, err)
 	
 	// ${id}
 	res = make([]*User, 0)
-	err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
+	_, err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
 		"id":"id",
 	})(&res)
 	fmt.Println("queryStructsByCond", res, err)
 
+	// ${id} with count
+	res = make([]*User, 0)
+	cnt, err = gb.Select("userMapper.queryStructsByOrder", map[string]interface{}{
+		"id":"id",
+	})(&res)
+	fmt.Println("queryStructsByCond", cnt, res, err)
+
+
 	// 开启事务示例
 	tx, _ := gb.Begin()
 	defer tx.Rollback()
-	tx.Select("userMapper.findMapById", map[string]interface{}{"id": 1,})(mapRes)
+	_, tx.Select("userMapper.findMapById", map[string]interface{}{"id": 1,})(mapRes)
 	fmt.Println("tx userMapper.findMapById-->", mapRes, err)
 	tx.Commit()
 }
@@ -291,7 +306,7 @@ func main() {
 	mapRes := make(map[string]interface{})
 	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
 	// 查询参数可以是map，也可以是数组，也可以是实体结构
-	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
+	_, err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 }
 ```
@@ -336,7 +351,7 @@ func main() {
 	mapRes := make(map[string]interface{})
 	// stmt标识为：namespace + '.' + id, 如：userMapper.findMapById
 	// 查询参数可以是map，也可以是数组，也可以是实体结构
-	err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
+	_, err := gb.Select("userMapper.findMapById", map[string]interface{}{"id": 1})(mapRes)
 	fmt.Println("userMapper.findMapById-->", mapRes, err)
 }
 ```
