@@ -3,6 +3,7 @@ package gobatis
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"reflect"
 	"strconv"
@@ -131,6 +132,47 @@ func bytesToVal(data interface{}, tp reflect.Type) interface{} {
 	}
 
 	return data
+}
+
+func valToInt64(data interface{}) (int64, error) {
+	tp := reflect.TypeOf(data)
+	switch tp.Kind() {
+	case reflect.Bool:
+		if data.(bool) {
+			return 1, nil
+		}
+		return 0, nil
+	case reflect.Int:
+		return int64(data.(int)), nil
+	case reflect.Int8:
+		return int64(data.(int8)), nil
+	case reflect.Int16:
+		return int64(data.(int16)), nil
+	case reflect.Int32:
+		return int64(data.(int32)), nil
+	case reflect.Int64:
+		return data.(int64), nil
+	case reflect.Uint:
+		return int64(data.(uint)), nil
+	case reflect.Uint8:
+		return int64(data.(uint8)), nil
+	case reflect.Uint16:
+		return int64(data.(uint16)), nil
+	case reflect.Uint32:
+		return int64(data.(uint32)), nil
+	case reflect.Uint64:
+		return int64(data.(uint64)), nil
+	case reflect.Uintptr:
+		return int64(data.(uintptr)), nil
+	case reflect.Float32:
+		return int64(data.(float32)), nil
+	case reflect.Float64:
+		return int64(data.(float64)), nil
+	case reflect.String:
+		return strconv.ParseInt(data.(string), 10, 64)
+	default:
+		return 0, errors.New("unsupported type")
+	}
 }
 
 func valToString(data interface{}) string {
