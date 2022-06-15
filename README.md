@@ -1,5 +1,7 @@
 # gobatis
 
+[![CodeQL](https://github.com/wenj91/gobatis/actions/workflows/codeql.yml/badge.svg?branch=master)](https://github.com/wenj91/gobatis/actions/workflows/codeql.yml)
+
 目前代码都是基于类mysql数据库编写测试的,其他数据库暂时还未做兼容处理
 
 - [x] 支持数据库
